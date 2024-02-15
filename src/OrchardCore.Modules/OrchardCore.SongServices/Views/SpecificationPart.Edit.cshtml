@@ -1,0 +1,113 @@
+@model SpecificationPartViewModel
+@using OrchardCore.SongServices.ViewModels;
+
+<fieldset class="form-group" asp-validation-class-for="Description">
+	<label asp-for="Description">@T["Description"] <span asp-validation-for="Description"></span></label>
+	<input asp-for="Description" class="form-control" />
+	<span class="hint">@T["Description's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="AssignerContentItemId">
+	<label asp-for="AssignerContentItemId">@T["AssignerContentItemId"] <span asp-validation-for="AssignerContentItemId"></span></label>
+	<input asp-for="AssignerContentItemId" class="form-control" />
+	<span class="hint">@T["AssignerContentItemId's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="AssigneeContentItemId">
+	<label asp-for="AssigneeContentItemId">@T["AssigneeContentItemId"] <span asp-validation-for="AssigneeContentItemId"></span></label>
+	<input asp-for="AssigneeContentItemId" class="form-control" />
+	<span class="hint">@T["AssigneeContentItemId's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Supplement">
+	<label asp-for="Supplement">@T["Supplement"] <span asp-validation-for="Supplement"></span></label>
+	<input asp-for="Supplement" class="form-control" />
+	<span class="hint">@T["Supplement's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="RootCause">
+	<label asp-for="RootCause">@T["RootCause"] <span asp-validation-for="RootCause"></span></label>
+	<input asp-for="RootCause" class="form-control" />
+	<span class="hint">@T["RootCause's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="IsPlanned">
+	<label asp-for="IsPlanned">@T["IsPlanned"] <span asp-validation-for="IsPlanned"></span></label>
+	<input asp-for="IsPlanned" />
+	<span class="hint">@T["IsPlanned's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="IsIncident">
+	<label asp-for="IsIncident">@T["IsIncident"] <span asp-validation-for="IsIncident"></span></label>
+	<input asp-for="IsIncident" />
+	<span class="hint">@T["IsIncident's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="IsInHouse">
+	<label asp-for="IsInHouse">@T["IsInHouse"] <span asp-validation-for="IsInHouse"></span></label>
+	<input asp-for="IsInHouse" />
+	<span class="hint">@T["IsInHouse's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="IsOutsourced">
+	<label asp-for="IsOutsourced">@T["IsOutsourced"] <span asp-validation-for="IsOutsourced"></span></label>
+	<input asp-for="IsOutsourced" />
+	<span class="hint">@T["IsOutsourced's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="ReportStatus">
+	<label asp-for="ReportStatus">@T["ReportStatus"] <span asp-validation-for="ReportStatus"></span></label>
+	<input asp-for="ReportStatus" class="form-control" />
+	<span class="hint">@T["ReportStatus's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="OfferContentItemId">
+	<label asp-for="OfferContentItemId">@T["OfferContentItemId"] <span asp-validation-for="OfferContentItemId"></span></label>
+	<input asp-for="OfferContentItemId" class="form-control" />
+	<span class="hint">@T["OfferContentItemId's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Behavior">
+	<label asp-for="Behavior">@T["Behavior"] <span asp-validation-for="Behavior"></span></label>
+	<input asp-for="Behavior" class="form-control" />
+	<span class="hint">@T["Behavior's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Asset">
+	<label asp-for="Asset">@T["Asset"] <span asp-validation-for="Asset"></span></label>
+	<input asp-for="Asset" class="form-control" />
+	<span class="hint">@T["Asset's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Event">
+	<label asp-for="Event">@T["Event"] <span asp-validation-for="Event"></span></label>
+	<input asp-for="Event" class="form-control" />
+	<span class="hint">@T["Event's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Others">
+	<label asp-for="Others">@T["Others"] <span asp-validation-for="Others"></span></label>
+	<input asp-for="Others" class="form-control" />
+	<span class="hint">@T["Others's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Sender">
+	<label asp-for="Sender">@T["Sender"] <span asp-validation-for="Sender"></span></label>
+	<input asp-for="Sender" class="form-control" />
+	<span class="hint">@T["Sender's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Writer">
+	<label asp-for="Writer">@T["Writer"] <span asp-validation-for="Writer"></span></label>
+	<input asp-for="Writer" class="form-control" />
+	<span class="hint">@T["Writer's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Photos">
+	<label asp-for="Photos">@T["Photos"] <span asp-validation-for="Photos"></span></label>
+	<input asp-for="Photos" class="form-control" />
+	<span class="hint">@T["Photos's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Clips">
+	<label asp-for="Clips">@T["Clips"] <span asp-validation-for="Clips"></span></label>
+	<input asp-for="Clips" class="form-control" />
+	<span class="hint">@T["Clips's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Audio">
+	<label asp-for="Audio">@T["Audio"] <span asp-validation-for="Audio"></span></label>
+	<input asp-for="Audio" class="form-control" />
+	<span class="hint">@T["Audio's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Files">
+	<label asp-for="Files">@T["Files"] <span asp-validation-for="Files"></span></label>
+	<input asp-for="Files" class="form-control" />
+	<span class="hint">@T["Files's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="LocationContentItemId">
+	<label asp-for="LocationContentItemId">@T["LocationContentItemId"] <span asp-validation-for="LocationContentItemId"></span></label>
+	<input asp-for="LocationContentItemId" class="form-control" />
+	<span class="hint">@T["LocationContentItemId's name"]</span>
+</fieldset>

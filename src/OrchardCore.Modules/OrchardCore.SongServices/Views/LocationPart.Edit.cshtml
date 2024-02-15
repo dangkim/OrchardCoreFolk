@@ -1,0 +1,43 @@
+@model LocationPartViewModel
+@using OrchardCore.SongServices.ViewModels;
+
+<fieldset class="form-group" asp-validation-class-for="Country">
+	<label asp-for="Country">@T["Country"] <span asp-validation-for="Country"></span></label>
+	<input asp-for="Country" class="form-control" />
+	<span class="hint">@T["Country's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="City">
+	<label asp-for="City">@T["City"] <span asp-validation-for="City"></span></label>
+	<input asp-for="City" class="form-control" />
+	<span class="hint">@T["City's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Street">
+	<label asp-for="Street">@T["Street"] <span asp-validation-for="Street"></span></label>
+	<input asp-for="Street" class="form-control" />
+	<span class="hint">@T["Street's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Site">
+	<label asp-for="Site">@T["Site"] <span asp-validation-for="Site"></span></label>
+	<input asp-for="Site" class="form-control" />
+	<span class="hint">@T["Site's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Building">
+	<label asp-for="Building">@T["Building"] <span asp-validation-for="Building"></span></label>
+	<input asp-for="Building" class="form-control" />
+	<span class="hint">@T["Building's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Floor">
+	<label asp-for="Floor">@T["Floor"] <span asp-validation-for="Floor"></span></label>
+	<input asp-for="Floor" class="form-control" />
+	<span class="hint">@T["Floor's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Zone">
+	<label asp-for="Zone">@T["Zone"] <span asp-validation-for="Zone"></span></label>
+	<input asp-for="Zone" class="form-control" />
+	<span class="hint">@T["Zone's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Room">
+	<label asp-for="Room">@T["Room"] <span asp-validation-for="Room"></span></label>
+	<input asp-for="Room" class="form-control" />
+	<span class="hint">@T["Room's name"]</span>
+</fieldset>

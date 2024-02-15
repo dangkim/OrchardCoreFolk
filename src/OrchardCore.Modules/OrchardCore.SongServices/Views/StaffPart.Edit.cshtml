@@ -1,0 +1,63 @@
+@model StaffPartViewModel
+@using OrchardCore.SongServices.ViewModels;
+
+<fieldset class="form-group" asp-validation-class-for="Nickname">
+	<label asp-for="Nickname">@T["Nickname"] <span asp-validation-for="Nickname"></span></label>
+	<input asp-for="Nickname" class="form-control" />
+	<span class="hint">@T["Nickname's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="AvatarId">
+	<label asp-for="AvatarId">@T["AvatarId"] <span asp-validation-for="AvatarId"></span></label>
+	<input asp-for="AvatarId" class="form-control" />
+	<span class="hint">@T["AvatarId's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Operator">
+	<label asp-for="Operator">@T["Operator"] <span asp-validation-for="Operator"></span></label>
+	<input asp-for="Operator" class="form-control" />
+	<span class="hint">@T["Operator's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Team">
+	<label asp-for="Team">@T["Team"] <span asp-validation-for="Team"></span></label>
+	<input asp-for="Team" class="form-control" />
+	<span class="hint">@T["Team's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="FullName">
+	<label asp-for="FullName">@T["FullName"] <span asp-validation-for="FullName"></span></label>
+	<input asp-for="FullName" class="form-control" />
+	<span class="hint">@T["FullName's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="UserName">
+	<label asp-for="UserName">@T["UserName"] <span asp-validation-for="UserName"></span></label>
+	<input asp-for="UserName" class="form-control" />
+	<span class="hint">@T["UserName's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="BookmarkedReportContentItemIds">
+	<label asp-for="BookmarkedReportContentItemIds">@T["BookmarkedReportContentItemIds"] <span asp-validation-for="BookmarkedReportContentItemIds"></span></label>
+	<input asp-for="BookmarkedReportContentItemIds" class="form-control" />
+	<span class="hint">@T["BookmarkedReportContentItemIds's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Balance">
+	<label asp-for="Balance">@T["Balance"] <span asp-validation-for="Balance"></span></label>
+	<input asp-for="Balance" class="form-control" />
+	<span class="hint">@T["Balance's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Currency">
+	<label asp-for="Currency">@T["Currency"] <span asp-validation-for="Currency"></span></label>
+	<input asp-for="Currency" class="form-control" />
+	<span class="hint">@T["Currency's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="CustomNickname">
+	<label asp-for="CustomNickname">@T["CustomNickname"] <span asp-validation-for="CustomNickname"></span></label>
+	<input asp-for="CustomNickname" class="form-control" />
+	<span class="hint">@T["CustomNickname's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="StaffId">
+	<label asp-for="StaffId">@T["StaffId"] <span asp-validation-for="StaffId"></span></label>
+	<input asp-for="StaffId" class="form-control" />
+	<span class="hint">@T["StaffId's name"]</span>
+</fieldset>
+<fieldset class="form-group" asp-validation-class-for="Birthday">
+	<label asp-for="Birthday">@T["Birthday"] <span asp-validation-for="Birthday"></span></label>
+	<input asp-for="Birthday" class="form-control" />
+	<span class="hint">@T["Birthday's name"]</span>
+</fieldset>
