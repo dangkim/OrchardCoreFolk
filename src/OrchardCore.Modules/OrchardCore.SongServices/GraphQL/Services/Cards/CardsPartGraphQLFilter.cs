@@ -13,7 +13,6 @@ using static OrchardCore.SongServices.GraphQL.Services.Cards.CardsPartTypeBuilde
 using OrchardCore.SongServices.Indexes;
 using OrchardCore.ContentManagement.Records;
 using GraphQL;
-using GraphQL.Language.AST;
 
 namespace OrchardCore.SongServices.GraphQL.Services.Cards;
 

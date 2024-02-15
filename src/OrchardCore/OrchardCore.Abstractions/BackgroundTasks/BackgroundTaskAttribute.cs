@@ -42,5 +42,7 @@ namespace OrchardCore.BackgroundTasks
         /// and then executed to allow route urls generation in the background.
         /// </summary>
         public bool UsePipeline { get; set; }
+
+        public bool IsIncludedSeconds { get; set; }
     }
 }

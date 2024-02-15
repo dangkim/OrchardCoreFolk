@@ -23,6 +23,7 @@ namespace OrchardCore.BackgroundTasks
                     LockTimeout = attribute.LockTimeout,
                     LockExpiration = attribute.LockExpiration,
                     UsePipeline = attribute.UsePipeline,
+                    IsIncludedSeconds = attribute.IsIncludedSeconds,
                 };
             }
 

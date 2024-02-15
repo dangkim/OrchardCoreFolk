@@ -41,6 +41,14 @@ namespace OrchardCore.OpenId
     {
         public override void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyHeader()
+                       .AllowAnyMethod()
+                       .WithOrigins("http://localhost:3000", "http://18.177.146.114:3000")
+                       .AllowCredentials();
+            }));
+
             // Register the OpenIddict core services and the Orchard migrations, managers and default YesSql stores.
             // The default YesSql stores can be replaced by another database by referencing the corresponding
             // OpenIddict package (e.g OpenIddict.EntityFrameworkCore) and registering it in the options.
@@ -66,6 +74,14 @@ namespace OrchardCore.OpenId
     {
         public override void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyHeader()
+                       .AllowAnyMethod()
+                       .WithOrigins("http://localhost:3000", "http://18.177.146.114:3000")
+                       .AllowCredentials();
+            }));
+
             services.TryAddSingleton<IOpenIdClientService, OpenIdClientService>();
 
             // Note: the following services are registered using TryAddEnumerable to prevent duplicate registrations.
@@ -93,6 +109,14 @@ namespace OrchardCore.OpenId
     {
         public override void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyHeader()
+                       .AllowAnyMethod()
+                       .WithOrigins("http://localhost:3000", "http://18.177.146.114:3000")
+                       .AllowCredentials();
+            }));
+
             services.AddOpenIddict()
                 .AddServer(options =>
                 {
@@ -132,6 +156,8 @@ namespace OrchardCore.OpenId
 
         public override async ValueTask ConfigureAsync(IApplicationBuilder app, IEndpointRouteBuilder routes, IServiceProvider serviceProvider)
         {
+            app.UseCors("MyPolicy");
+
             var settings = await GetServerSettingsAsync();
             if (settings == null)
             {
@@ -209,6 +235,14 @@ namespace OrchardCore.OpenId
     {
         public override void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyHeader()
+                       .AllowAnyMethod()
+                       .WithOrigins("http://localhost:3000", "http://18.177.146.114:3000")
+                       .AllowCredentials();
+            }));
+
             services.AddOpenIddict()
                 .AddValidation(options =>
                 {

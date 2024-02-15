@@ -50,5 +50,7 @@ namespace OrchardCore.BackgroundTasks
         /// the lock timeout and the lock expiration time are greater than zero.
         /// </summary>
         public bool IsAtomic => LockTimeout > 0 && LockExpiration > 0;
+
+        public bool IsIncludedSeconds { get; set; }
     }
 }

@@ -33,7 +33,7 @@ namespace OrchardCore.SimService.Services
     /// <summary>
     /// This background task will read email.
     /// </summary>
-    [BackgroundTask(Schedule = "* * 0 * * *", Description = "read gmail.")]
+    [BackgroundTask(Schedule = "* * 0 * * *", Description = "read gmail.", IsIncludedSeconds = true)]
     public class EmailReadingTask : IBackgroundTask
     {
         private readonly ILogger _logger;
@@ -77,11 +77,11 @@ namespace OrchardCore.SimService.Services
                     await inbox.OpenAsync(FolderAccess.ReadWrite, cancellationToken);
 
                     var uids = await inbox.SearchAsync(SearchQuery.NotSeen, cancellationToken);
-                    
+
                     var messages = inbox.Fetch(uids, MessageSummaryItems.UniqueId | MessageSummaryItems.Envelope | MessageSummaryItems.Flags)
                                .OrderByDescending(summary => summary.Envelope.Date)
                                .Take(10);
-                    
+
                     foreach (var message in messages)
                     {
                         var email = await inbox.GetMessageAsync(message.UniqueId, cancellationToken);

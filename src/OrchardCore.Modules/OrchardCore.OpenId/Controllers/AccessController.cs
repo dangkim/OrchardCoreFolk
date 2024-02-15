@@ -387,6 +387,7 @@ namespace OrchardCore.OpenId.Controllers
         }
 
         [AllowAnonymous, HttpPost]
+        [EnableCors("MyPolicy")]
         [IgnoreAntiforgeryToken]
         [Produces("application/json")]
         public Task<IActionResult> Token()

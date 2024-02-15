@@ -1,6 +1,7 @@
 using System;
 using NCrontab;
 using OrchardCore.Modules;
+using static NCrontab.CrontabSchedule;
 
 namespace OrchardCore.BackgroundTasks
 {
@@ -38,7 +39,9 @@ namespace OrchardCore.BackgroundTasks
                 referenceTime = _clock.ConvertToTimeZone(ReferenceTime, TimeZone).DateTime;
             }
 
-            var nextStartTime = CrontabSchedule.Parse(Settings.Schedule).GetNextOccurrence(referenceTime);
+            //var nextStartTime = CrontabSchedule.Parse(Settings.Schedule).GetNextOccurrence(referenceTime);
+            var nextStartTime = CrontabSchedule.Parse(Settings.Schedule, new ParseOptions { IncludingSeconds = Settings.IsIncludedSeconds }).GetNextOccurrence(referenceTime);
+
             if (now >= nextStartTime)
             {
                 if (Settings.Enable && !Released && Updated)

@@ -29,6 +29,14 @@ namespace OrchardCore.Apis.GraphQL
 
         public override void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyHeader()
+                       .AllowAnyMethod()
+                       .WithOrigins("http://localhost:3000", "http://18.177.146.114:3000")
+                       .AllowCredentials();
+            }));
+
             services.AddSingleton<IDocumentExecuter, DocumentExecuter>();
             services.AddSingleton<IDataLoaderContextAccessor, DataLoaderContextAccessor>();
             services.AddSingleton<IDocumentExecutionListener, DataLoaderDocumentListener>();
@@ -78,6 +86,8 @@ namespace OrchardCore.Apis.GraphQL
 
         public override void Configure(IApplicationBuilder app, IEndpointRouteBuilder routes, IServiceProvider serviceProvider)
         {
+            app.UseCors("MyPolicy");
+
             app.UseMiddleware<GraphQLMiddleware>();
         }
     }
