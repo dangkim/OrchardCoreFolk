@@ -7,6 +7,7 @@ using OrchardCore.Data.Migration;
 using YesSql.Sql;
 using OrchardCore.SimService.Indexes;
 using OrchardCore.SimService.Models;
+using System.Threading.Tasks;
 
 namespace OrchardCore.SimService.Migrations;
 public class SimMigration : DataMigration
@@ -15,45 +16,45 @@ public class SimMigration : DataMigration
 
     public SimMigration(IContentDefinitionManager contentDefinitionManager) => _contentDefinitionManager = contentDefinitionManager;
 
-    public int Create()
+    public async Task<int> CreateAsync()
     {
-        _contentDefinitionManager.AlterPartDefinition(nameof(OrderDetailPart), part => part
+        await _contentDefinitionManager.AlterPartDefinitionAsync(nameof(OrderDetailPart), part => part
                 .Attachable()
             );
 
-        _contentDefinitionManager.AlterPartDefinition(nameof(SmsPart), part => part
+        await _contentDefinitionManager.AlterPartDefinitionAsync(nameof(SmsPart), part => part
             .Attachable()
         );
 
-        _contentDefinitionManager.AlterTypeDefinition("Orders", type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync("Orders", type => type
             .Creatable()
             .Listable()
             .WithPart(nameof(OrderDetailPart))
             .WithPart(nameof(SmsPart))
         );
 
-        _contentDefinitionManager.AlterPartDefinition(nameof(PaymentDetailPart), part => part
+        await _contentDefinitionManager.AlterPartDefinitionAsync(nameof(PaymentDetailPart), part => part
             .Attachable()
         );
 
-        _contentDefinitionManager.AlterTypeDefinition("Payments", type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync("Payments", type => type
             .Creatable()
             .Listable()
             .WithPart(nameof(PaymentDetailPart))
         );
 
-        _contentDefinitionManager.AlterPartDefinition(nameof(UserProfilePart), part => part
+        await _contentDefinitionManager.AlterPartDefinitionAsync(nameof(UserProfilePart), part => part
             .Attachable()
         );
 
-        _contentDefinitionManager.AlterTypeDefinition("UserProfile", type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync("UserProfile", type => type
             .Creatable()
             .Listable()
             .WithPart(nameof(UserProfilePart))
 
         );
 
-        SchemaBuilder.CreateMapIndexTable<OrderDetailPartIndex>(table => table
+        await SchemaBuilder.CreateMapIndexTableAsync<OrderDetailPartIndex>(table => table
             .Column<string>(nameof(OrderDetailPartIndex.ContentItemId), column => column.WithLength(26))
             .Column<long>(nameof(OrderDetailPartIndex.OrderId))
             .Column<string>(nameof(OrderDetailPartIndex.Phone), column => column.WithLength(20))
@@ -70,38 +71,38 @@ public class SimMigration : DataMigration
             .Column<string>(nameof(OrderDetailPartIndex.Category))
         );
 
-        SchemaBuilder.AlterTable(nameof(OrderDetailPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(OrderDetailPartIndex), table => table
             .CreateIndex(
                 $"IDX_{nameof(OrderDetailPartIndex)}_{nameof(OrderDetailPartIndex.OrderId)}",
                 nameof(OrderDetailPartIndex.OrderId))
         );
 
-        SchemaBuilder.AlterTable(nameof(OrderDetailPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(OrderDetailPartIndex), table => table
             .CreateIndex(
                 $"IDX_{nameof(OrderDetailPartIndex)}_{nameof(OrderDetailPartIndex.UserId)}",
                 nameof(OrderDetailPartIndex.UserId))
         );
 
-        SchemaBuilder.AlterTable(nameof(OrderDetailPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(OrderDetailPartIndex), table => table
             .CreateIndex(
                 $"IDX_{nameof(OrderDetailPartIndex)}_{nameof(OrderDetailPartIndex.UserName)}",
                 nameof(OrderDetailPartIndex.UserName))
         );
 
-        SchemaBuilder.AlterTable(nameof(OrderDetailPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(OrderDetailPartIndex), table => table
             .CreateIndex(
                 $"IDX_{nameof(OrderDetailPartIndex)}_{nameof(OrderDetailPartIndex.Email)}",
                 nameof(OrderDetailPartIndex.Email))
         );
 
-        SchemaBuilder.AlterTable(nameof(OrderDetailPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(OrderDetailPartIndex), table => table
                 .CreateIndex(
                     $"IDX_{nameof(OrderDetailPartIndex)}_{nameof(OrderDetailPartIndex.Category)}",
                     nameof(OrderDetailPartIndex.Category))
         );
 
         ////////////////////// UserProfile////////////////////////
-        SchemaBuilder.CreateMapIndexTable<UserProfilePartIndex>(table => table
+        await SchemaBuilder.CreateMapIndexTableAsync<UserProfilePartIndex>(table => table
             .Column<string>(nameof(UserProfilePartIndex.ContentItemId), column => column.WithLength(26))
             .Column<int>(nameof(UserProfilePartIndex.ProfileId))
             .Column<string>(nameof(UserProfilePartIndex.Vendor), column => column.WithLength(26))
@@ -123,38 +124,38 @@ public class SimMigration : DataMigration
             .Column<string>(nameof(UserProfilePartIndex.TokenApi))
         );
 
-        SchemaBuilder.AlterTable(nameof(UserProfilePartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(UserProfilePartIndex), table => table
             .CreateIndex(
                 $"IDX_{nameof(UserProfilePartIndex)}_{nameof(UserProfilePartIndex.ProfileId)}",
                 nameof(UserProfilePartIndex.ProfileId))
         );
 
-        SchemaBuilder.AlterTable(nameof(UserProfilePartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(UserProfilePartIndex), table => table
             .CreateIndex(
                 $"IDX_{nameof(UserProfilePartIndex)}_{nameof(UserProfilePartIndex.UserId)}",
                 nameof(UserProfilePartIndex.UserId))
         );
 
-        SchemaBuilder.AlterTable(nameof(UserProfilePartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(UserProfilePartIndex), table => table
             .CreateIndex(
                 $"IDX_{nameof(UserProfilePartIndex)}_{nameof(UserProfilePartIndex.UserName)}",
                 nameof(UserProfilePartIndex.UserName))
         );
 
-        SchemaBuilder.AlterTable(nameof(UserProfilePartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(UserProfilePartIndex), table => table
             .CreateIndex(
                 $"IDX_{nameof(UserProfilePartIndex)}_{nameof(UserProfilePartIndex.Email)}",
                 nameof(UserProfilePartIndex.Email))
         );
 
-        SchemaBuilder.AlterTable(nameof(UserProfilePartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(UserProfilePartIndex), table => table
                 .CreateIndex(
                     $"IDX_{nameof(UserProfilePartIndex)}_{nameof(UserProfilePartIndex.TokenApi)}",
                     nameof(UserProfilePartIndex.TokenApi))
         );
 
         ////////////////////////////Payments////////////////////////
-        SchemaBuilder.CreateMapIndexTable<PaymentDetailPartIndex>(table => table
+        await SchemaBuilder.CreateMapIndexTableAsync<PaymentDetailPartIndex>(table => table
             .Column<string>(nameof(PaymentDetailPartIndex.ContentItemId), column => column.WithLength(26))
             .Column<int>(nameof(PaymentDetailPartIndex.PaymentId))
             .Column<string>(nameof(PaymentDetailPartIndex.TypeName), column => column.WithLength(26))
@@ -168,38 +169,38 @@ public class SimMigration : DataMigration
             .Column<long>(nameof(PaymentDetailPartIndex.OrderId))
         );
 
-        SchemaBuilder.AlterTable(nameof(PaymentDetailPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(PaymentDetailPartIndex), table => table
             .CreateIndex(
                 $"IDX_{nameof(PaymentDetailPartIndex)}_{nameof(PaymentDetailPartIndex.PaymentId)}",
                 nameof(PaymentDetailPartIndex.PaymentId))
         );
 
-        SchemaBuilder.AlterTable(nameof(PaymentDetailPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(PaymentDetailPartIndex), table => table
             .CreateIndex(
                 $"IDX_{nameof(PaymentDetailPartIndex)}_{nameof(PaymentDetailPartIndex.UserId)}",
                 nameof(PaymentDetailPartIndex.UserId))
         );
 
-        SchemaBuilder.AlterTable(nameof(PaymentDetailPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(PaymentDetailPartIndex), table => table
             .CreateIndex(
                 $"IDX_{nameof(PaymentDetailPartIndex)}_{nameof(PaymentDetailPartIndex.UserName)}",
                 nameof(PaymentDetailPartIndex.UserName))
         );
 
-        SchemaBuilder.AlterTable(nameof(PaymentDetailPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(PaymentDetailPartIndex), table => table
             .CreateIndex(
                 $"IDX_{nameof(PaymentDetailPartIndex)}_{nameof(PaymentDetailPartIndex.Email)}",
                 nameof(PaymentDetailPartIndex.Email))
         );
 
-        SchemaBuilder.AlterTable(nameof(PaymentDetailPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(PaymentDetailPartIndex), table => table
                 .CreateIndex(
                     $"IDX_{nameof(PaymentDetailPartIndex)}_{nameof(PaymentDetailPartIndex.OrderId)}",
                     nameof(PaymentDetailPartIndex.OrderId))
         );
 
         //////////////////////////////SMS part///////////////////////////////
-        SchemaBuilder.CreateMapIndexTable<SmsPartIndex>(table => table
+        await SchemaBuilder.CreateMapIndexTableAsync<SmsPartIndex>(table => table
             .Column<string>(nameof(SmsPartIndex.ContentItemId), column => column.WithLength(26))
             .Column<string>(nameof(SmsPartIndex.Sender), column => column.WithLength(26))
             .Column<string>(nameof(SmsPartIndex.Text))
@@ -212,25 +213,25 @@ public class SimMigration : DataMigration
             .Column<DateTime>(nameof(SmsPartIndex.Date))
         );
 
-        SchemaBuilder.AlterTable(nameof(SmsPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SmsPartIndex), table => table
             .CreateIndex(
                 $"IDX_{nameof(SmsPartIndex)}_{nameof(SmsPartIndex.UserId)}",
                 nameof(SmsPartIndex.UserId))
         );
 
-        SchemaBuilder.AlterTable(nameof(SmsPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SmsPartIndex), table => table
             .CreateIndex(
                 $"IDX_{nameof(SmsPartIndex)}_{nameof(SmsPartIndex.UserName)}",
                 nameof(SmsPartIndex.UserName))
         );
 
-        SchemaBuilder.AlterTable(nameof(SmsPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SmsPartIndex), table => table
             .CreateIndex(
                 $"IDX_{nameof(SmsPartIndex)}_{nameof(SmsPartIndex.Email)}",
                 nameof(SmsPartIndex.Email))
         );
 
-        SchemaBuilder.AlterTable(nameof(SmsPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SmsPartIndex), table => table
                 .CreateIndex(
                     $"IDX_{nameof(SmsPartIndex)}_{nameof(SmsPartIndex.OrderId)}",
                     nameof(SmsPartIndex.OrderId))
