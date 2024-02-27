@@ -8,6 +8,7 @@ using OrchardCore.Data.Migration;
 using System;
 using YesSql.Sql;
 using OrchardCore.SongServices.Indexing;
+using System.Threading.Tasks;
 
 namespace OrchardCore.SongServices.Migrations;
 
@@ -21,10 +22,10 @@ public class PersonMigrations : DataMigration
 
     public PersonMigrations(IContentDefinitionManager contentDefinitionManager) => _contentDefinitionManager = contentDefinitionManager;
 
-    public int Create()
+    public async Task<int> CreateAsync()
     {
         // Now you can configure PersonPart. For example you can add content fields (as mentioned earlier) here.
-        _contentDefinitionManager.AlterPartDefinition(nameof(PersonPart), part => part
+        await _contentDefinitionManager.AlterPartDefinitionAsync(nameof(PersonPart), part => part
             // Each field has its own configuration. Here you will give a display name for it and add some additional
             // settings like a hint to be displayed in the editor.
             .WithField(nameof(PersonPart.Biography), field => field
@@ -38,7 +39,7 @@ public class PersonMigrations : DataMigration
         );
 
         // This one will create an index table for the PersonPartIndex as explained in the BookMigrations file.
-        SchemaBuilder.CreateMapIndexTable<PersonPartIndex>(table => table
+        await SchemaBuilder.CreateMapIndexTableAsync<PersonPartIndex>(table => table
             .Column<DateTime>(nameof(PersonPartIndex.BirthDateUtc))
             .Column<string>(nameof(PersonPartIndex.Name))
             .Column<Handedness>(nameof(PersonPartIndex.Handedness))
@@ -46,13 +47,13 @@ public class PersonMigrations : DataMigration
             .Column<string>(nameof(PersonPartIndex.ContentItemId), column => column.WithLength(26))
         );
 
-        SchemaBuilder.AlterTable(nameof(PersonPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(PersonPartIndex), table => table
                 .CreateIndex(
                     $"IDX_{nameof(PersonPartIndex)}_{nameof(PersonPartIndex.BirthDateUtc)}",
                     nameof(PersonPartIndex.BirthDateUtc))
             );
 
-        SchemaBuilder.AlterTable(nameof(PersonPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(PersonPartIndex), table => table
                         .CreateIndex(
                             $"IDX_{nameof(PersonPartIndex)}_{nameof(PersonPartIndex.Name)}",
                             nameof(PersonPartIndex.Name))
@@ -63,7 +64,7 @@ public class PersonMigrations : DataMigration
         // https://docs.orchardcore.net/en/latest/docs/glossary/#content-type. The content type's name is arbitrary but
         // choose a meaningful one. Notice how we use a class with constants to store the type name so we prevent risky
         // copy-pasting.
-        _contentDefinitionManager.AlterTypeDefinition(ContentTypes.PersonPage, type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync(ContentTypes.PersonPage, type => type
             .Creatable()
             .Listable()
             // We attach parts by specifying their name. For our own parts we use nameof(): This is not mandatory but
@@ -74,12 +75,12 @@ public class PersonMigrations : DataMigration
         // We can even create a widget with the same content part. Widgets are just content types as usual but with the
         // Stereotype set as "Widget". You'll notice that our site's configuration includes three zones on the frontend
         // that you can add widgets to, as well as two layers. Check them out on the admin!
-        _contentDefinitionManager.AlterTypeDefinition("PersonWidget", type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync("PersonWidget", type => type
             .Stereotype("Widget")
             .WithPart(nameof(PersonPart))
         );
 
-        SchemaBuilder.CreateMapIndexTable<OfferFilteringPartIndex>(table => table
+        await SchemaBuilder.CreateMapIndexTableAsync<OfferFilteringPartIndex>(table => table
             .Column<decimal>(nameof(OfferFilteringPartIndex.MinAmount))
             .Column<decimal>(nameof(OfferFilteringPartIndex.MaxAmount))
             .Column<string>(nameof(OfferFilteringPartIndex.Status))
@@ -93,55 +94,55 @@ public class PersonMigrations : DataMigration
             .Column<string>(nameof(OfferFilteringPartIndex.ContentItemId), column => column.WithLength(26))
         );
 
-        SchemaBuilder.AlterTable(nameof(OfferFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(OfferFilteringPartIndex), table => table
                 .CreateIndex(
                     $"IDX_{nameof(OfferFilteringPartIndex)}_{nameof(OfferFilteringPartIndex.MinAmount)}",
                     nameof(OfferFilteringPartIndex.MinAmount))
             );
 
-        SchemaBuilder.AlterTable(nameof(OfferFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(OfferFilteringPartIndex), table => table
                         .CreateIndex(
                             $"IDX_{nameof(OfferFilteringPartIndex)}_{nameof(OfferFilteringPartIndex.MaxAmount)}",
                             nameof(OfferFilteringPartIndex.MaxAmount))
                     );
 
-        SchemaBuilder.AlterTable(nameof(OfferFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(OfferFilteringPartIndex), table => table
                         .CreateIndex(
                             $"IDX_{nameof(OfferFilteringPartIndex)}_{nameof(OfferFilteringPartIndex.Status)}",
                             nameof(OfferFilteringPartIndex.Status))
                     );
 
-        SchemaBuilder.AlterTable(nameof(OfferFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(OfferFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(OfferFilteringPartIndex)}_{nameof(OfferFilteringPartIndex.Wallet)}",
                            nameof(OfferFilteringPartIndex.Wallet))
                    );
 
-        SchemaBuilder.AlterTable(nameof(OfferFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(OfferFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(OfferFilteringPartIndex)}_{nameof(OfferFilteringPartIndex.PaymentMethod)}",
                            nameof(OfferFilteringPartIndex.PaymentMethod))
                    );
 
-        SchemaBuilder.AlterTable(nameof(OfferFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(OfferFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(OfferFilteringPartIndex)}_{nameof(OfferFilteringPartIndex.PreferredCurrency)}",
                            nameof(OfferFilteringPartIndex.PreferredCurrency))
                    );
 
-        SchemaBuilder.AlterTable(nameof(OfferFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(OfferFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(OfferFilteringPartIndex)}_{nameof(OfferFilteringPartIndex.Percentage)}",
                            nameof(OfferFilteringPartIndex.Percentage))
                    );
 
-        SchemaBuilder.AlterTable(nameof(OfferFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(OfferFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(OfferFilteringPartIndex)}_{nameof(OfferFilteringPartIndex.OfferType)}",
                            nameof(OfferFilteringPartIndex.OfferType))
                    );
 
-        SchemaBuilder.AlterTable(nameof(OfferFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(OfferFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(OfferFilteringPartIndex)}_{nameof(OfferFilteringPartIndex.DateTime)}",
                            nameof(OfferFilteringPartIndex.DateTime))
@@ -152,7 +153,7 @@ public class PersonMigrations : DataMigration
         // https://docs.orchardcore.net/en/latest/docs/glossary/#content-type. The content type's name is arbitrary but
         // choose a meaningful one. Notice how we use a class with constants to store the type name so we prevent risky
         // copy-pasting.
-        _contentDefinitionManager.AlterTypeDefinition(ContentTypes.OfferPage, type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync(ContentTypes.OfferPage, type => type
             .Creatable()
             .Listable()
             // We attach parts by specifying their name. For our own parts we use nameof(): This is not mandatory but
@@ -161,7 +162,7 @@ public class PersonMigrations : DataMigration
         );
 
         /*****************************************Trade Part*************************************************/
-        SchemaBuilder.CreateMapIndexTable<TradeFilteringPartIndex>(table => table
+        await SchemaBuilder.CreateMapIndexTableAsync<TradeFilteringPartIndex>(table => table
             .Column<string>(nameof(TradeFilteringPartIndex.TradeType))
             .Column<string>(nameof(TradeFilteringPartIndex.PaymentMethod))
             .Column<int>(nameof(TradeFilteringPartIndex.FeeType))
@@ -188,127 +189,127 @@ public class PersonMigrations : DataMigration
             .Column<string>(nameof(TradeFilteringPartIndex.ContentItemId), column => column.WithLength(26))
         );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                 .CreateIndex(
                     $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.PaymentMethod)}",
                     nameof(TradeFilteringPartIndex.PaymentMethod))
             );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                         .CreateIndex(
                             $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.FeeType)}",
                             nameof(TradeFilteringPartIndex.FeeType))
                     );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                         .CreateIndex(
                             $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.OfferType)}",
                             nameof(TradeFilteringPartIndex.OfferType))
                     );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.OfferWallet)}",
                            nameof(TradeFilteringPartIndex.OfferWallet))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.Duration)}",
                            nameof(TradeFilteringPartIndex.Duration))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.SellerContentId)}",
                            nameof(TradeFilteringPartIndex.SellerContentId))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.BuyerContentId)}",
                            nameof(TradeFilteringPartIndex.BuyerContentId))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.CurrencyOfTrade)}",
                            nameof(TradeFilteringPartIndex.CurrencyOfTrade))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.FeeVNDAmount)}",
                            nameof(TradeFilteringPartIndex.FeeVNDAmount))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.FeeBTCAmount)}",
                            nameof(TradeFilteringPartIndex.FeeBTCAmount))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.FeeETHAmount)}",
                            nameof(TradeFilteringPartIndex.FeeETHAmount))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.FeeUSDT20Amount)}",
                            nameof(TradeFilteringPartIndex.FeeUSDT20Amount))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.TradeVNDAmount)}",
                            nameof(TradeFilteringPartIndex.TradeVNDAmount))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.TradeBTCAmount)}",
                            nameof(TradeFilteringPartIndex.TradeBTCAmount))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.TradeUSDT20Amount)}",
                            nameof(TradeFilteringPartIndex.TradeUSDT20Amount))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.TradeETHAmount)}",
                            nameof(TradeFilteringPartIndex.TradeETHAmount))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.Seller)}",
                            nameof(TradeFilteringPartIndex.Seller))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.Buyer)}",
                            nameof(TradeFilteringPartIndex.Buyer))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.Status)}",
                            nameof(TradeFilteringPartIndex.Status))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.OfferId)}",
                            nameof(TradeFilteringPartIndex.OfferId))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TradeFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TradeFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TradeFilteringPartIndex)}_{nameof(TradeFilteringPartIndex.DateTime)}",
                            nameof(TradeFilteringPartIndex.DateTime))
@@ -319,7 +320,7 @@ public class PersonMigrations : DataMigration
         // https://docs.orchardcore.net/en/latest/docs/glossary/#content-type. The content type's name is arbitrary but
         // choose a meaningful one. Notice how we use a class with constants to store the type name so we prevent risky
         // copy-pasting.
-        _contentDefinitionManager.AlterTypeDefinition(ContentTypes.TradePage, type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync(ContentTypes.TradePage, type => type
             .Creatable()
             .Listable()
             // We attach parts by specifying their name. For our own parts we use nameof(): This is not mandatory but
@@ -328,7 +329,7 @@ public class PersonMigrations : DataMigration
         );
 
         /*****************************************Traderrrrr Part*************************************************/
-        SchemaBuilder.CreateMapIndexTable<TraderForFilteringPartIndex>(table => table
+        await SchemaBuilder.CreateMapIndexTableAsync<TraderForFilteringPartIndex>(table => table
             .Column<string>(nameof(TraderForFilteringPartIndex.Name))
             .Column<bool>(nameof(TraderForFilteringPartIndex.IsActivatedTele))
             .Column<decimal>(nameof(TraderForFilteringPartIndex.BondVndBalance))
@@ -350,103 +351,103 @@ public class PersonMigrations : DataMigration
             .Column<string>(nameof(TraderForFilteringPartIndex.ContentItemId), column => column.WithLength(26))
         );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                 .CreateIndex(
                     $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.Name)}",
                     nameof(TraderForFilteringPartIndex.Name))
             );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                         .CreateIndex(
                             $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.IsActivatedTele)}",
                             nameof(TraderForFilteringPartIndex.IsActivatedTele))
                     );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                         .CreateIndex(
                             $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.BondVndBalance)}",
                             nameof(TraderForFilteringPartIndex.BondVndBalance))
                     );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.VndBalance)}",
                            nameof(TraderForFilteringPartIndex.VndBalance))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.BTCBalance)}",
                            nameof(TraderForFilteringPartIndex.BTCBalance))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.ETHBalance)}",
                            nameof(TraderForFilteringPartIndex.ETHBalance))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.USDT20Balance)}",
                            nameof(TraderForFilteringPartIndex.USDT20Balance))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.WithdrawVNDStatus)}",
                            nameof(TraderForFilteringPartIndex.WithdrawVNDStatus))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.ReferenceCode)}",
                            nameof(TraderForFilteringPartIndex.ReferenceCode))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.DateSend)}",
                            nameof(TraderForFilteringPartIndex.DateSend))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.UserId)}",
                            nameof(TraderForFilteringPartIndex.UserId))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.Email)}",
                            nameof(TraderForFilteringPartIndex.Email))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.PhoneNumber)}",
                            nameof(TraderForFilteringPartIndex.PhoneNumber))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.BankAccounts)}",
                            nameof(TraderForFilteringPartIndex.BankAccounts))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.ChatIdTele)}",
                            nameof(TraderForFilteringPartIndex.ChatIdTele))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.DeviceId)}",
                            nameof(TraderForFilteringPartIndex.DeviceId))
                    );
 
-        SchemaBuilder.AlterTable(nameof(TraderForFilteringPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(TraderForFilteringPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(TraderForFilteringPartIndex)}_{nameof(TraderForFilteringPartIndex.DateTime)}",
                            nameof(TraderForFilteringPartIndex.DateTime))
@@ -457,7 +458,7 @@ public class PersonMigrations : DataMigration
         // https://docs.orchardcore.net/en/latest/docs/glossary/#content-type. The content type's name is arbitrary but
         // choose a meaningful one. Notice how we use a class with constants to store the type name so we prevent risky
         // copy-pasting.
-        _contentDefinitionManager.AlterTypeDefinition(ContentTypes.TraderPage, type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync(ContentTypes.TraderPage, type => type
             .Creatable()
             .Listable()
             // We attach parts by specifying their name. For our own parts we use nameof(): This is not mandatory but
@@ -467,9 +468,9 @@ public class PersonMigrations : DataMigration
         return 1;
     }
 
-    public int UpdateFrom1()
+    public async Task<int> UpdateFrom1Async()
     {
-        _contentDefinitionManager.AlterPartDefinition(nameof(TraderForFilteringPart), part => part
+        await _contentDefinitionManager.AlterPartDefinitionAsync(nameof(TraderForFilteringPart), part => part
             .WithField(nameof(TraderForFilteringPart.Name), field => field
                 .OfType(nameof(TextField))
                 .WithDisplayName("Name")
@@ -482,9 +483,9 @@ public class PersonMigrations : DataMigration
         return 2;
     }
 
-    public int UpdateFrom2()
+    public async Task<int> UpdateFrom2Async()
     {
-        _contentDefinitionManager.AlterTypeDefinition(ContentTypes.TraderPage, type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync(ContentTypes.TraderPage, type => type
             .Creatable()
             .Listable()
             // We attach parts by specifying their name. For our own parts we use nameof(): This is not mandatory but
@@ -495,22 +496,22 @@ public class PersonMigrations : DataMigration
         return 3;
     }
 
-    public int UpdateFrom3()
+    public async Task<int> UpdateFrom3Async()
     {
         // remove the AccreditationsPart part cleanly
-        _contentDefinitionManager.DeletePartDefinition(typeof(TraderForFilteringPart).Name);
+        await _contentDefinitionManager.DeletePartDefinitionAsync(typeof(TraderForFilteringPart).Name);
         // re-add the AccreditationsPart again
-        _contentDefinitionManager.AlterPartDefinition(typeof(TraderForFilteringPart).Name,
+        await _contentDefinitionManager.AlterPartDefinitionAsync(typeof(TraderForFilteringPart).Name,
             cfg => cfg
             .Attachable());
         return 4;
     }
 
-    public int UpdateFrom4()
+    public async Task<int> UpdateFrom4Async()
     {
-        _contentDefinitionManager.DeleteTypeDefinition(nameof(TraderForFilteringPartIndex));
+        await _contentDefinitionManager.DeleteTypeDefinitionAsync(nameof(TraderForFilteringPartIndex));
 
-        _contentDefinitionManager.AlterTypeDefinition(ContentTypes.TraderPage, type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync(ContentTypes.TraderPage, type => type
             .Creatable()
             .Listable()
             // We attach parts by specifying their name. For our own parts we use nameof(): This is not mandatory but
@@ -520,19 +521,19 @@ public class PersonMigrations : DataMigration
         return 5;
     }
 
-    public int UpdateFrom5()
+    public async Task<int> UpdateFrom5Async()
     {
-        _contentDefinitionManager.AlterTypeDefinition(ContentTypes.TraderPage, type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync(ContentTypes.TraderPage, type => type
         .RemovePart(nameof(TraderForFilteringPartIndex)));
         return 6;
     }
 
-    public int UpdateFrom6()
+    public async Task<int> UpdateFrom6Async()
     {
-        _contentDefinitionManager.AlterTypeDefinition(ContentTypes.TradePage, type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync(ContentTypes.TradePage, type => type
         .RemovePart(nameof(TradeFilteringPartIndex)));
 
-        _contentDefinitionManager.AlterTypeDefinition(ContentTypes.TradePage, type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync(ContentTypes.TradePage, type => type
             .Creatable()
             .Listable()
             .WithPart(nameof(TradeFilteringPart))
@@ -540,26 +541,26 @@ public class PersonMigrations : DataMigration
         return 7;
     }
 
-    public int UpdateFrom7()
+    public async Task<int> UpdateFrom7Async()
     {
-        _contentDefinitionManager.AlterPartDefinition(typeof(TradeFilteringPart).Name,
+        await _contentDefinitionManager.AlterPartDefinitionAsync(typeof(TradeFilteringPart).Name,
             cfg => cfg
             .Attachable());
 
         return 8;
     }
 
-    public int UpdateFrom8()
+    public async Task<int> UpdateFrom8Async()
     {
-        _contentDefinitionManager.AlterPartDefinition(typeof(OfferFilteringPart).Name,
+        await _contentDefinitionManager.AlterPartDefinitionAsync(typeof(OfferFilteringPart).Name,
             cfg => cfg
             .Attachable());
         /*****************************************Traderrrrr Part*************************************************/
-        _contentDefinitionManager.AlterPartDefinition(typeof(LocationPart).Name,
+        await _contentDefinitionManager.AlterPartDefinitionAsync(typeof(LocationPart).Name,
            cfg => cfg
            .Attachable());
 
-        SchemaBuilder.CreateMapIndexTable<LocationPartIndex>(table => table
+        await SchemaBuilder.CreateMapIndexTableAsync<LocationPartIndex>(table => table
             .Column<string>(nameof(LocationPartIndex.Country))
             .Column<string>(nameof(LocationPartIndex.City))
             .Column<string>(nameof(LocationPartIndex.Street))
@@ -573,55 +574,55 @@ public class PersonMigrations : DataMigration
             .Column<string>(nameof(LocationPartIndex.ContentItemId), column => column.WithLength(26))
         );
 
-        SchemaBuilder.AlterTable(nameof(LocationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(LocationPartIndex), table => table
                 .CreateIndex(
                     $"IDX_{nameof(LocationPartIndex)}_{nameof(LocationPartIndex.Country)}",
                     nameof(LocationPartIndex.Country))
             );
 
-        SchemaBuilder.AlterTable(nameof(LocationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(LocationPartIndex), table => table
                         .CreateIndex(
                             $"IDX_{nameof(LocationPartIndex)}_{nameof(LocationPartIndex.City)}",
                             nameof(LocationPartIndex.City))
                     );
 
-        SchemaBuilder.AlterTable(nameof(LocationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(LocationPartIndex), table => table
                         .CreateIndex(
                             $"IDX_{nameof(LocationPartIndex)}_{nameof(LocationPartIndex.Street)}",
                             nameof(LocationPartIndex.Street))
                     );
 
-        SchemaBuilder.AlterTable(nameof(LocationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(LocationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(LocationPartIndex)}_{nameof(LocationPartIndex.Site)}",
                            nameof(LocationPartIndex.Site))
                    );
 
-        SchemaBuilder.AlterTable(nameof(LocationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(LocationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(LocationPartIndex)}_{nameof(LocationPartIndex.Building)}",
                            nameof(LocationPartIndex.Building))
                    );
 
-        SchemaBuilder.AlterTable(nameof(LocationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(LocationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(LocationPartIndex)}_{nameof(LocationPartIndex.Floor)}",
                            nameof(LocationPartIndex.Floor))
                    );
 
-        SchemaBuilder.AlterTable(nameof(LocationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(LocationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(LocationPartIndex)}_{nameof(LocationPartIndex.Zone)}",
                            nameof(LocationPartIndex.Zone))
                    );
 
-        SchemaBuilder.AlterTable(nameof(LocationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(LocationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(LocationPartIndex)}_{nameof(LocationPartIndex.Room)}",
                            nameof(LocationPartIndex.Room))
                    );
 
-        SchemaBuilder.AlterTable(nameof(LocationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(LocationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(LocationPartIndex)}_{nameof(LocationPartIndex.DateTime)}",
                            nameof(LocationPartIndex.DateTime))
@@ -632,7 +633,7 @@ public class PersonMigrations : DataMigration
         // https://docs.orchardcore.net/en/latest/docs/glossary/#content-type. The content type's name is arbitrary but
         // choose a meaningful one. Notice how we use a class with constants to store the type name so we prevent risky
         // copy-pasting.
-        _contentDefinitionManager.AlterTypeDefinition(ContentTypes.LocationPage, type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync(ContentTypes.LocationPage, type => type
             .Creatable()
             .Listable()
             // We attach parts by specifying their name. For our own parts we use nameof(): This is not mandatory but
@@ -643,10 +644,10 @@ public class PersonMigrations : DataMigration
         return 9;
     }
 
-    public int UpdateFrom9()
+    public async Task<int> UpdateFrom9Async()
     {
         /*****************************************Specification Part*************************************************/
-        SchemaBuilder.CreateMapIndexTable<SpecificationPartIndex>(table => table
+        await SchemaBuilder.CreateMapIndexTableAsync<SpecificationPartIndex>(table => table
             .Column<string>(nameof(SpecificationPartIndex.Description))
             .Column<string>(nameof(SpecificationPartIndex.AssignerContentItemId))
             .Column<int>(nameof(SpecificationPartIndex.AssigneeContentItemId))
@@ -673,139 +674,139 @@ public class PersonMigrations : DataMigration
             // The content item ID is always 26 characters.
             .Column<string>(nameof(SpecificationPartIndex.ContentItemId), column => column.WithLength(26))
         );
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                 .CreateIndex(
                     $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.Description)}",
                     nameof(SpecificationPartIndex.Description))
             );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                 .CreateIndex(
                     $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.AssignerContentItemId)}",
                     nameof(SpecificationPartIndex.AssignerContentItemId))
             );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                 .CreateIndex(
                     $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.AssigneeContentItemId)}",
                     nameof(SpecificationPartIndex.AssigneeContentItemId))
             );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                         .CreateIndex(
                             $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.Supplement)}",
                             nameof(SpecificationPartIndex.Supplement))
                     );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                         .CreateIndex(
                             $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.RootCause)}",
                             nameof(SpecificationPartIndex.RootCause))
                     );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.IsPlanned)}",
                            nameof(SpecificationPartIndex.IsPlanned))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.IsIncident)}",
                            nameof(SpecificationPartIndex.IsIncident))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.IsInHouse)}",
                            nameof(SpecificationPartIndex.IsInHouse))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.IsOutsourced)}",
                            nameof(SpecificationPartIndex.IsOutsourced))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.Status)}",
                            nameof(SpecificationPartIndex.Status))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.OfferContentItemId)}",
                            nameof(SpecificationPartIndex.OfferContentItemId))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.Behavior)}",
                            nameof(SpecificationPartIndex.Behavior))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.Asset)}",
                            nameof(SpecificationPartIndex.Asset))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.Event)}",
                            nameof(SpecificationPartIndex.Event))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.Others)}",
                            nameof(SpecificationPartIndex.Others))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.Sender)}",
                            nameof(SpecificationPartIndex.Sender))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.Writer)}",
                            nameof(SpecificationPartIndex.Writer))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.Photos)}",
                            nameof(SpecificationPartIndex.Photos))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.Clips)}",
                            nameof(SpecificationPartIndex.Clips))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.Audio)}",
                            nameof(SpecificationPartIndex.Audio))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.Files)}",
                            nameof(SpecificationPartIndex.Files))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.LocationContentItemId)}",
                            nameof(SpecificationPartIndex.LocationContentItemId))
                    );
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.DateTime)}",
                            nameof(SpecificationPartIndex.DateTime))
@@ -816,7 +817,7 @@ public class PersonMigrations : DataMigration
         // https://docs.orchardcore.net/en/latest/docs/glossary/#content-type. The content type's name is arbitrary but
         // choose a meaningful one. Notice how we use a class with constants to store the type name so we prevent risky
         // copy-pasting.
-        _contentDefinitionManager.AlterTypeDefinition(ContentTypes.SpecificationPage, type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync(ContentTypes.SpecificationPage, type => type
             .Creatable()
             .Listable()
             // We attach parts by specifying their name. For our own parts we use nameof(): This is not mandatory but
@@ -824,26 +825,26 @@ public class PersonMigrations : DataMigration
             .WithPart(nameof(SpecificationPart))
         );
 
-        _contentDefinitionManager.AlterPartDefinition(typeof(SpecificationPart).Name,
+        await _contentDefinitionManager.AlterPartDefinitionAsync(typeof(SpecificationPart).Name,
             cfg => cfg
             .Attachable());
 
         return 10;
     }
 
-    public int UpdateFrom10()
+    public async Task<int> UpdateFrom10Async()
     {
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                         .DropIndex(
                             $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.AssigneeContentItemId)}"));
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                         .DropColumn(nameof(SpecificationPartIndex.AssigneeContentItemId)));
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                         .AddColumn<string>(nameof(SpecificationPartIndex.AssigneeContentItemId)));
 
-        SchemaBuilder.AlterTable(nameof(SpecificationPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(SpecificationPartIndex), table => table
                 .CreateIndex(
                     $"IDX_{nameof(SpecificationPartIndex)}_{nameof(SpecificationPartIndex.AssigneeContentItemId)}",
                     nameof(SpecificationPartIndex.AssigneeContentItemId))
@@ -852,10 +853,10 @@ public class PersonMigrations : DataMigration
         return 11;
     }
 
-    public int UpdateFrom11()
+    public async Task<int> UpdateFrom11Async()
     {
         /*****************************************Staff Part*************************************************/
-        SchemaBuilder.CreateMapIndexTable<StaffPartIndex>(table => table
+        await SchemaBuilder.CreateMapIndexTableAsync<StaffPartIndex>(table => table
             .Column<string>(nameof(StaffPartIndex.Nickname))
             .Column<string>(nameof(StaffPartIndex.AvatarId))
             .Column<string>(nameof(StaffPartIndex.Operator))
@@ -873,79 +874,79 @@ public class PersonMigrations : DataMigration
             .Column<string>(nameof(StaffPartIndex.ContentItemId), column => column.WithLength(26))
         );
 
-        SchemaBuilder.AlterTable(nameof(StaffPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(StaffPartIndex), table => table
                .CreateIndex(
                    $"IDX_{nameof(StaffPartIndex)}_{nameof(StaffPartIndex.Nickname)}",
                    nameof(StaffPartIndex.Nickname))
            );
 
-        SchemaBuilder.AlterTable(nameof(StaffPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(StaffPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(StaffPartIndex)}_{nameof(StaffPartIndex.AvatarId)}",
                            nameof(StaffPartIndex.AvatarId))
                    );
 
-        SchemaBuilder.AlterTable(nameof(StaffPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(StaffPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(StaffPartIndex)}_{nameof(StaffPartIndex.Operator)}",
                            nameof(StaffPartIndex.Operator))
                    );
 
-        SchemaBuilder.AlterTable(nameof(StaffPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(StaffPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(StaffPartIndex)}_{nameof(StaffPartIndex.Team)}",
                            nameof(StaffPartIndex.Team))
                    );
 
-        SchemaBuilder.AlterTable(nameof(StaffPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(StaffPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(StaffPartIndex)}_{nameof(StaffPartIndex.FullName)}",
                            nameof(StaffPartIndex.FullName))
                    );
 
-        SchemaBuilder.AlterTable(nameof(StaffPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(StaffPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(StaffPartIndex)}_{nameof(StaffPartIndex.UserName)}",
                            nameof(StaffPartIndex.UserName))
                    );
 
-        SchemaBuilder.AlterTable(nameof(StaffPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(StaffPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(StaffPartIndex)}_{nameof(StaffPartIndex.BookmarkedReportContentItemIds)}",
                            nameof(StaffPartIndex.BookmarkedReportContentItemIds))
                    );
 
-        SchemaBuilder.AlterTable(nameof(StaffPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(StaffPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(StaffPartIndex)}_{nameof(StaffPartIndex.Balance)}",
                            nameof(StaffPartIndex.Balance))
                    );
 
-        SchemaBuilder.AlterTable(nameof(StaffPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(StaffPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(StaffPartIndex)}_{nameof(StaffPartIndex.Currency)}",
                            nameof(StaffPartIndex.Currency))
                    );
 
-        SchemaBuilder.AlterTable(nameof(StaffPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(StaffPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(StaffPartIndex)}_{nameof(StaffPartIndex.CustomNickname)}",
                            nameof(StaffPartIndex.CustomNickname))
                    );
 
-        SchemaBuilder.AlterTable(nameof(StaffPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(StaffPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(StaffPartIndex)}_{nameof(StaffPartIndex.StaffId)}",
                            nameof(StaffPartIndex.StaffId))
                    );
 
-        SchemaBuilder.AlterTable(nameof(StaffPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(StaffPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(StaffPartIndex)}_{nameof(StaffPartIndex.Birthday)}",
                            nameof(StaffPartIndex.Birthday))
                    );
 
-        SchemaBuilder.AlterTable(nameof(StaffPartIndex), table => table
+        await SchemaBuilder.AlterTableAsync(nameof(StaffPartIndex), table => table
                        .CreateIndex(
                            $"IDX_{nameof(StaffPartIndex)}_{nameof(StaffPartIndex.DateTime)}",
                            nameof(StaffPartIndex.DateTime))
@@ -956,7 +957,7 @@ public class PersonMigrations : DataMigration
         // https://docs.orchardcore.net/en/latest/docs/glossary/#content-type. The content type's name is arbitrary but
         // choose a meaningful one. Notice how we use a class with constants to store the type name so we prevent risky
         // copy-pasting.
-        _contentDefinitionManager.AlterTypeDefinition(ContentTypes.StaffPage, type => type
+        await _contentDefinitionManager.AlterTypeDefinitionAsync(ContentTypes.StaffPage, type => type
             .Creatable()
             .Listable()
             // We attach parts by specifying their name. For our own parts we use nameof(): This is not mandatory but
@@ -964,7 +965,7 @@ public class PersonMigrations : DataMigration
             .WithPart(nameof(StaffPart))
         );
 
-        _contentDefinitionManager.AlterPartDefinition(typeof(StaffPart).Name,
+        await _contentDefinitionManager.AlterPartDefinitionAsync(typeof(StaffPart).Name,
             cfg => cfg
             .Attachable());
 
