@@ -30,6 +30,7 @@ using System.Security.Claims;
 using OrchardCore.SimService.ViewModels;
 using RestSharp;
 using OrchardCore.SimService.Permissions;
+using OrchardCore.Data;
 
 namespace OrchardCore.SimService.Controllers
 {
@@ -48,6 +49,7 @@ namespace OrchardCore.SimService.Controllers
         private readonly IEmailAddressValidator _emailAddressValidator;
         private readonly ILogger _logger;
         private readonly YesSql.ISession _session;
+        private readonly YesSql.ISession _sessionReadOnly;
         private readonly IUserService _userService;
         public string fiveSimToken;
 
@@ -59,6 +61,7 @@ namespace OrchardCore.SimService.Controllers
             IUserService userService,
             Microsoft.Extensions.Configuration.IConfiguration config,
             YesSql.ISession session,
+            IReadOnlySession sessionReadOnly,
             IContentManager contentManager,
             IAuthorizationService authorizationService,
             UserManager<IUser> userManager,
@@ -75,6 +78,7 @@ namespace OrchardCore.SimService.Controllers
             _logger = logger;
             S = stringLocalizer;
             _session = session;
+            _sessionReadOnly = sessionReadOnly;
 
             fiveSimToken = _config["FiveSimToken"];
 
@@ -95,9 +99,12 @@ namespace OrchardCore.SimService.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> RateVndToUsd()
         {
-            var exchangeRateVND = await _session
+            var exchangeRateVND = await _sessionReadOnly
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "ExchangeRate" && index.DisplayText == "VND" && index.Published && index.Latest)
                 .FirstOrDefaultAsync();
+            //var exchangeRateVND = await _session
+            //    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "ExchangeRate" && index.DisplayText == "VND" && index.Published && index.Latest)
+            //    .FirstOrDefaultAsync();
 
             if (exchangeRateVND != null)
             {

@@ -10,16 +10,19 @@ namespace OrchardCore.Data
     public class DbConnectionAccessor : IDbConnectionAccessor
     {
         private readonly IStore _store;
+        private readonly IStore _storeReadOnly;
 
         /// <summary>
         /// Creates a new instance of the <see cref="DbConnectionAccessor"/>.
         /// </summary>
         /// <param name="store">The <see cref="IStore"/>.</param>
-        public DbConnectionAccessor(IStore store)
+        /// <param name="storeReadOnly">The <see cref="IStore"/>.</param>
+        public DbConnectionAccessor(IStore store, IStore storeReadOnly)
         {
             ArgumentNullException.ThrowIfNull(store);
 
             _store = store;
+            _storeReadOnly = storeReadOnly;
         }
 
         /// <inheritdocs />
@@ -27,5 +30,10 @@ namespace OrchardCore.Data
         {
             return _store.Configuration.ConnectionFactory.CreateConnection();
         }
+        public DbConnection CreateReadOnlyConnection()
+        {
+            return _storeReadOnly.Configuration.ConnectionFactory.CreateConnection();
+        }
+
     }
 }

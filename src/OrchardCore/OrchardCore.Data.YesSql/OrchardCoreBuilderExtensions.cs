@@ -118,6 +118,71 @@ namespace Microsoft.Extensions.DependencyInjection
                     return store;
                 });
 
+                services.AddSingleton<IReadOnlyYesSqlStore, ReadOnlyStoreWrapper>(sp =>
+                {
+                    var shellSettings = sp.GetService<ShellSettings>();
+
+                    // Before the setup, a 'DatabaseProvider' may be configured without a required 'ConnectionString'.
+                    if (shellSettings.IsUninitialized() || shellSettings["DatabaseProvider"] is null)
+                    {
+                        return null;
+                    }
+
+                    var yesSqlOptions = sp.GetService<IOptions<YesSqlOptions>>().Value;
+                    var databaseTableOptions = shellSettings.GetDatabaseTableOptions();
+                    var storeConfiguration = GetStoreConfiguration(sp, yesSqlOptions, databaseTableOptions);
+
+                    switch (shellSettings["DatabaseProvider"])
+                    {
+                        case DatabaseProviderValue.SqlConnection:
+                            storeConfiguration
+                                .UseSqlServer(shellSettings["ConnectionStringReadOnly"], IsolationLevel.ReadUncommitted, shellSettings["Schema"])
+                                .UseBlockIdGenerator();
+                            break;
+                        case DatabaseProviderValue.Sqlite:
+                            var shellOptions = sp.GetService<IOptions<ShellOptions>>().Value;
+                            var sqliteOptions = sp.GetService<IOptions<SqliteOptions>>().Value;
+
+                            var databaseFolder = SqliteHelper.GetDatabaseFolder(shellOptions, shellSettings.Name);
+                            Directory.CreateDirectory(databaseFolder);
+
+                            // Only allow creating a file DB when a tenant is in the Initializing state
+                            var connectionString = SqliteHelper.GetConnectionString(sqliteOptions, databaseFolder, shellSettings);
+
+                            storeConfiguration
+                                .UseSqLite(connectionString, IsolationLevel.ReadUncommitted)
+                                .UseDefaultIdGenerator();
+                            break;
+                        case DatabaseProviderValue.MySql:
+                            storeConfiguration
+                                .UseMySql(shellSettings["ConnectionStringReadOnly"], IsolationLevel.ReadUncommitted, shellSettings["Schema"])
+                                .UseBlockIdGenerator();
+                            break;
+                        case DatabaseProviderValue.Postgres:
+                            storeConfiguration
+                                .UsePostgreSql(shellSettings["ConnectionStringReadOnly"], IsolationLevel.ReadUncommitted, shellSettings["Schema"])
+                                .UseBlockIdGenerator();
+                            break;
+                        default:
+                            throw new ArgumentException("Unknown database provider: " + shellSettings["DatabaseProvider"]);
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(shellSettings["TablePrefix"]))
+                    {
+                        var tablePrefix = shellSettings["TablePrefix"].Trim() + databaseTableOptions.TableNameSeparator;
+
+                        storeConfiguration.SetTablePrefix(tablePrefix);
+                    }
+
+                    var store = StoreFactory.Create(storeConfiguration);
+
+                    var indexes = sp.GetServices<IIndexProvider>();
+
+                    store.RegisterIndexes(indexes);
+
+                    return new ReadOnlyStoreWrapper(store);
+                });
+
                 services.Initialize(async sp =>
                 {
                     var store = sp.GetService<IStore>();
@@ -165,6 +230,57 @@ namespace Microsoft.Extensions.DependencyInjection
                         });
 
                     return session;
+                });
+
+                services.Initialize(async sp =>
+                {
+                    var store = sp.GetService<IReadOnlyYesSqlStore>();
+                    if (store == null)
+                    {
+                        return;
+                    }
+
+                    await store.InitializeAsync();
+
+                    var storeCollectionOptions = sp.GetService<IOptions<StoreCollectionOptions>>().Value;
+                    foreach (var collection in storeCollectionOptions.Collections)
+                    {
+                        await store.InitializeCollectionAsync(collection);
+                    }
+                });
+
+                services.AddScoped<IReadOnlySession, ReadOnlySessionWrapper>(sp =>
+                {
+                    var store = sp.GetService<IReadOnlyYesSqlStore>();
+
+                    if (store == null)
+                    {
+                        return null;
+                    }
+
+                    var session = store.CreateSession();
+
+                    var readOnlySession = new ReadOnlySessionWrapper(session);
+
+                    var scopedServices = sp.GetServices<IScopedIndexProvider>();
+
+                    readOnlySession.RegisterIndexes(scopedServices.ToArray());
+
+                    ShellScope.Current
+                        .RegisterBeforeDispose(scope =>
+                        {
+                            return scope.ServiceProvider
+                                .GetRequiredService<IDocumentStore>()
+                                .CommitAsync();
+                        })
+                        .AddExceptionHandler((scope, e) =>
+                        {
+                            return scope.ServiceProvider
+                                .GetRequiredService<IDocumentStore>()
+                                .CancelAsync();
+                        });
+
+                    return readOnlySession;
                 });
 
                 services.AddScoped<IDocumentStore, DocumentStore>();
