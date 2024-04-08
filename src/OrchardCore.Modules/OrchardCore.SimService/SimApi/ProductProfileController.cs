@@ -23,6 +23,9 @@ using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 using OrchardCore.SimService.ApiCommonFunctions;
 using Microsoft.AspNetCore.Identity;
 using OrchardCore.Users;
+using System.Net.Http;
+using System.Threading;
+using System.Net.Http.Json;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -39,6 +42,7 @@ namespace OrchardCore.SimService.SimApi
         private readonly IConfiguration _config;
         private readonly IMemoryCache _memoryCache;
         private readonly ISignal _signal;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public ProductProfileController(
             ISession session,
@@ -47,7 +51,8 @@ namespace OrchardCore.SimService.SimApi
             IContentManager contentManager,
             UserManager<IUser> userManager,
             IAuthorizationService authorizationService,
-            Microsoft.Extensions.Configuration.IConfiguration config)
+            Microsoft.Extensions.Configuration.IConfiguration config,
+            IHttpClientFactory httpClientFactory)
         {
             _session = session;
             _memoryCache = memoryCache;
@@ -56,6 +61,7 @@ namespace OrchardCore.SimService.SimApi
             _userManager = userManager;
             _authorizationService = authorizationService;
             _config = config;
+            _httpClientFactory = httpClientFactory;
         }
 
         #region API Product
@@ -112,38 +118,22 @@ namespace OrchardCore.SimService.SimApi
                 url = string.Format("https://5sim.net/v1/guest/products/{0}/{1}/{2}", country, sixsimoperator, product);
             }
 
-            var client = new RestClient(url);
-            var request = new RestRequest();
-            //request.AddHeader("Authorization", "Bearer " + fiveSimToken);
+            var httpClient = _httpClientFactory.CreateClient("fsim");
 
-            var response = await client.ExecuteGetAsync(request);
-            dynamic resObject = JsonConvert.DeserializeObject<ExpandoObject>(response.Content, new ExpandoObjectConverter());
+            using var response = await httpClient.GetAsync(url);
 
-            var productObjects = new Dictionary<string, dynamic>(resObject);
+            var responseData = string.IsNullOrEmpty(product) ? await response.Content.ReadFromJsonAsync<Dictionary<string, FSProduct>>() :
+                                                                new Dictionary<string, FSProduct> { { "default", await response.Content.ReadFromJsonAsync<FSProduct>() } };
 
-            foreach (var item in productObjects.ToArray())
+            var productObjects = new Dictionary<string, FSProduct>(responseData);
+
+            foreach (var item in productObjects)
             {
-                var pair = (KeyValuePair<string, object>)item;
-
-                if (pair.Value is ExpandoObject)
-                {
-                    if (((IDictionary<string, object>)item.Value).ContainsKey("Price"))
-                    {
-                        var price = (decimal)item.Value.Price + ((decimal)item.Value.Price * percent / 100);
-                        AddProperty(item.Value, "Price", price);
-                    }
-                }
-                else
-                {
-                    if (item.Key == "Price")
-                    {
-                        var price = (decimal)item.Value + ((decimal)item.Value * percent / 100);
-                        productObjects[item.Key] = price;
-                    }                    
-                }
+                var price = item.Value.Price + (item.Value.Price * percent / 100);
+                item.Value.Price = price;
             }
 
-            return Ok(productObjects);
+            return Ok(productObjects.Count == 1 ? productObjects.FirstOrDefault().Value : productObjects);
 
         }
         #endregion
@@ -340,6 +330,13 @@ namespace OrchardCore.SimService.SimApi
                 expandoDict[propertyName] = propertyValue;
             else
                 expandoDict.Add(propertyName, propertyValue);
+        }
+
+        public class FSProduct
+        {
+            public string Category { get; set; }
+            public int Qty { get; set; }
+            public decimal Price { get; set; }
         }
     }
 }

@@ -68,6 +68,11 @@ namespace OrchardCore.SimService
             services.AddSingleton<IBackgroundTask, UpdateRateUsdByPMTask>();
 
             services.AddSingleton<IBackgroundTask, UpdateProductWareHouseFourTask>();
+
+            services.AddHttpClient("fsim", client =>
+            {
+                client.BaseAddress = new Uri("https://5sim.net/v1/guest/");
+            });
         }
 
         public override void Configure(IApplicationBuilder builder, IEndpointRouteBuilder routes, IServiceProvider serviceProvider)
