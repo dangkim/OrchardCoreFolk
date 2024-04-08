@@ -20,8 +20,7 @@ namespace OrchardCore.SimService.Services
     /// <summary>
     /// This background task will read email.
     /// </summary>
-    [BackgroundTask(Schedule = "* 0 */2 * * *", Description = "update rate usd by perfect money rate")]
-    //[BackgroundTask(Schedule = "*/2 * * * *", Description = "update rate usd by perfect money rate")]
+    [BackgroundTask(Schedule = "0 */2 * * *", Description = "update rate usd by perfect money rate")]
     public class UpdateRateUsdByPMTask : IBackgroundTask
     {
         private readonly ILogger _logger;

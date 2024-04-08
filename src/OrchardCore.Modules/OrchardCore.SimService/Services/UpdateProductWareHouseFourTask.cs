@@ -20,7 +20,7 @@ namespace OrchardCore.SimService.Services
     /// <summary>
     /// This background task will update product Ware House Four.
     /// </summary>
-    [BackgroundTask(Schedule = "* 0 */3 * * *", Description = "Update product Ware House Four")]
+    [BackgroundTask(Schedule = "0 */3 * * *", Description = "Update product Ware House Four")]
     public class UpdateProductWareHouseFourTask : IBackgroundTask
     {
         private readonly ILogger _logger;

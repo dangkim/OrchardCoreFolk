@@ -40,6 +40,10 @@ using NSwag.Annotations;
 using OrchardCore.SimService.Permissions;
 using OrchardCore.Users.ViewModels;
 using System.Text.Json.Settings;
+using Microsoft.AspNetCore.Authentication;
+using Org.BouncyCastle.Asn1.Ocsp;
+using System.Text.Json;
+using System.Text;
 
 namespace OrchardCore.SimService.Controllers
 {
@@ -230,7 +234,7 @@ namespace OrchardCore.SimService.Controllers
 
         [HttpPost]
         [EnableCors("MyPolicy")]
-        [ActionName("Register")]
+        [ActionName("SimRegister")]
         [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterModel model)
         {
@@ -280,7 +284,7 @@ namespace OrchardCore.SimService.Controllers
                     var key = Guid.NewGuid().ToByteArray();
                     var token = Convert.ToBase64String(time.Concat(key).ToArray());
 
-                    var newContentItem = await _contentManager.NewAsync("UserProfileType");
+                    var newContentItem = await _contentManager.NewAsync("UserProfile");
 
                     newContentItem.Owner = user.UserName;
                     newContentItem.Author = user.UserName;
@@ -318,7 +322,6 @@ namespace OrchardCore.SimService.Controllers
                             statusCode: (int)HttpStatusCode.BadRequest);
                     }
                 }
-
             }
 
             // If we got this far, something failed, redisplay form
@@ -368,7 +371,7 @@ namespace OrchardCore.SimService.Controllers
         [EnableCors("MyPolicy")]
         [ActionName("ResetPassword")]
         public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
-        {            
+        {
             var user = await _userManager.FindByIdAsync(model.UserId) as Users.Models.User;
 
             if (user == null)
@@ -489,6 +492,25 @@ namespace OrchardCore.SimService.Controllers
         }
 
         [HttpPost]
+        [ActionName("ExternalLoginGoogle")]
+        [EnableCors("MyPolicy")]
+        [AllowAnonymous]
+        public IActionResult ExternalLoginGoogleAsync(string returnUrl = null)
+        {
+            var provider = "Google";
+            _logger.LogError("Go to ExternalLoginGoogle");
+
+            var redirectUrl = _config["PaxHubUrl"] + "?returnUrl=" + returnUrl;
+
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+
+            var result = Challenge(properties, provider);
+            var jsonProperties = JsonSerializer.Serialize(result);
+            return Ok(jsonProperties);
+            //return Challenge(properties, provider);
+        }
+
+        [HttpPost]
         [ActionName("EmailLogin")]
         [AllowAnonymous]
         public async Task<IActionResult> EmailLoginAsync(string email)
@@ -584,6 +606,13 @@ namespace OrchardCore.SimService.Controllers
                             ConfirmPassword = externalLoginViewModel.UserName + "A@",
                         }, S["Confirm your account"], _logger);
 
+                        if (user == null || user is not User u)
+                        {
+                            _logger.LogError("Unable to load user with ID '{UserId}'.", _userManager.GetUserId(User));
+
+                            return RedirectToAction(returnUrl);
+                        }
+
                         // If the registration was successful we can link the external provider and redirect the user
                         if (user != null)
                         {
@@ -592,7 +621,7 @@ namespace OrchardCore.SimService.Controllers
                             var token = Convert.ToBase64String(time.Concat(key).ToArray());
 
                             // Create UserProfileType/Part
-                            var newContentItem = await _contentManager.NewAsync("UserProfileType");
+                            var newContentItem = await _contentManager.NewAsync("UserProfile");
 
                             newContentItem.Owner = user.UserName;
                             newContentItem.Author = user.UserName;
@@ -611,7 +640,7 @@ namespace OrchardCore.SimService.Controllers
                                 DefaultPrefix = "+84",
                                 DefaultOperatorName = "virtual16",
                                 FrozenBalance = 0m,
-                                TokenApi = token
+                                TokenApi = ""
                             };
 
                             newContentItem.Apply(userProfilePart);
@@ -749,7 +778,10 @@ namespace OrchardCore.SimService.Controllers
         {
             if (isFromGoogle)
             {
-                return Redirect(_config["VxFulFrontendUrl"] + "/login?username=" + userName + "&isgoogle=true&email=" + email);
+                var bytes = Encoding.UTF8.GetBytes(userName); // Convert a string to a byte array
+                var base64String = Convert.ToBase64String(bytes);
+
+                return Redirect(_config["VxFulFrontendUrl"] + "?sign=" + base64String);
             }
 
             var url = _config["VxFulFrontendUrl"] + returnUrl;

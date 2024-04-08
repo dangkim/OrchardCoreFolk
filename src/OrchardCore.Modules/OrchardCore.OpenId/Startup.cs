@@ -45,7 +45,7 @@ namespace OrchardCore.OpenId
             {
                 builder.AllowAnyHeader()
                        .AllowAnyMethod()
-                       .WithOrigins("http://localhost:3000", "http://18.177.146.114:3000")
+                       .WithOrigins("http://localhost:7284", "https://localhost:7284")
                        .AllowCredentials();
             }));
 
@@ -113,7 +113,7 @@ namespace OrchardCore.OpenId
             {
                 builder.AllowAnyHeader()
                        .AllowAnyMethod()
-                       .WithOrigins("http://localhost:3000", "http://18.177.146.114:3000")
+                       .WithOrigins("http://localhost:7284", "https://localhost:7284")
                        .AllowCredentials();
             }));
 
@@ -122,6 +122,7 @@ namespace OrchardCore.OpenId
                 {
                     options.UseAspNetCore();
                     options.UseDataProtection();
+                    options.SetAccessTokenLifetime(TimeSpan.FromDays(1));
                 });
 
             services.TryAddSingleton<IOpenIdServerService, OpenIdServerService>();
@@ -239,7 +240,7 @@ namespace OrchardCore.OpenId
             {
                 builder.AllowAnyHeader()
                        .AllowAnyMethod()
-                       .WithOrigins("http://localhost:3000", "http://18.177.146.114:3000")
+                       .WithOrigins("http://localhost:7284", "https://localhost:7284")
                        .AllowCredentials();
             }));
 
