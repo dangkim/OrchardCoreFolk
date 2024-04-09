@@ -133,7 +133,7 @@ namespace OrchardCore.SimService.SimApi
                 item.Value.Price = price;
             }
 
-            return Ok(productObjects.Count == 1 ? productObjects.FirstOrDefault().Value : productObjects);
+            return Ok(productObjects);
 
         }
         #endregion
