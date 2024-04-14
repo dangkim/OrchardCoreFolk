@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using OrchardCore.Users;
 using Microsoft.AspNetCore.Authentication;
 using OpenIddict.Server.AspNetCore;
+using System.Net.Http;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -20,21 +21,11 @@ namespace OrchardCore.SimService.SimApi
     public class CountriesProfileController : Controller
     {
         public string fiveSimToken;
-        private readonly SignInManager<IUser> _signInManager;
-        private readonly UserManager<IUser> _userManager;
-        private readonly IContentManager _contentManager;
-        private readonly IAuthorizationService _authorizationService;
-        
-        public CountriesProfileController(
-            SignInManager<IUser> signInManager,
-            UserManager<IUser> userManager,
-            IContentManager contentManager,
-            IAuthorizationService authorizationService)
+        private readonly IHttpClientFactory _httpClientFactory;
+
+        public CountriesProfileController(IHttpClientFactory httpClientFactory)
         {
-            _signInManager = signInManager;
-            _userManager = userManager;
-            _contentManager = contentManager;
-            _authorizationService = authorizationService;
+            _httpClientFactory = httpClientFactory;
         }
 
         #region API Countries
@@ -53,7 +44,6 @@ namespace OrchardCore.SimService.SimApi
         [AllowAnonymous]
         public async Task<IActionResult> GetCountriesListAsync()
         {
-
             string url = string.Format("https://5sim.net/v1/guest/countries");
             var client = new RestClient(url);
             var request = new RestRequest();
