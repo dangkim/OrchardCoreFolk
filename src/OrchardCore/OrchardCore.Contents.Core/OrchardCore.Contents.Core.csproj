@@ -20,7 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="YesSql.Filters.Query"/>
+    <PackageReference Include="Azure.Identity" Version="1.11.0" />
+    <PackageReference Include="YesSql.Filters.Query" />
   </ItemGroup>
 
 </Project>

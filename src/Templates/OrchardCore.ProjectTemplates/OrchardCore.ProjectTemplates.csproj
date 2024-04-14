@@ -44,6 +44,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.11.0" />
+  </ItemGroup>
+
   <UsingTask TaskName="ReplaceFileText" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
       <InputFilename ParameterType="System.String" Required="true" />
