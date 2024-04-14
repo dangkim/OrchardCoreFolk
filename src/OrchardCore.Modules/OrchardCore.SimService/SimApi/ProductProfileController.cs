@@ -11,9 +11,11 @@ using OrchardCore.ContentManagement;
 using OrchardCore.SimService.ApiModels;
 using OrchardCore.SimService.RedocAttributeProcessors;
 using RestSharp;
+using Newtonsoft.Json;
 using System.Collections;
 using System.Linq;
 using System.Dynamic;
+using Newtonsoft.Json.Converters;
 using Microsoft.Extensions.Caching.Memory;
 using OrchardCore.Environment.Cache;
 using YesSql;
@@ -24,14 +26,10 @@ using OrchardCore.Users;
 using System.Net.Http;
 using System.Threading;
 using System.Net.Http.Json;
-using System.IO;
-using System.Text.Json;
-using System.IO.Compression;
-using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace OrchardCore.SimService.SimApi
 {
-    [Route("api/content/[action]/{country?}/{sixsimoperator?}/{product?}")]
+    [Route("api/content/[action]/{country}/{sixsimoperator}/{product?}")]
     [ApiController]
     [Authorize(AuthenticationSchemes = "Api"), IgnoreAntiforgeryToken, AllowAnonymous]
     [OpenApiTag("Products and prices", Description = "Get information of products.")]
@@ -120,7 +118,7 @@ namespace OrchardCore.SimService.SimApi
                 url = string.Format("https://5sim.net/v1/guest/products/{0}/{1}/{2}", country, sixsimoperator, product);
             }
 
-            using var httpClient = _httpClientFactory.CreateClient("fsim");
+            var httpClient = _httpClientFactory.CreateClient("fsim");
 
             using var response = await httpClient.GetAsync(url);
 
@@ -174,49 +172,16 @@ namespace OrchardCore.SimService.SimApi
             "\nvar request = new RestRequest();" +
             "\nrequest.AddHeader(\"Accept\", \"application/json\");" +
             "\nvar response = await client.ExecuteGetAsync(request);")]
-        [AllowAnonymous]
-        public async Task<ActionResult<object>> PricesRequestAsync()
+        public async Task<ActionResult<PricesRequestDto>> PricesRequestAsync()
         {
-            var url = string.Format("https://5sim.net/v1/guest/prices");
+            string url = string.Format("https://5sim.net/v1/guest/prices");
 
-            var httpClient = _httpClientFactory.CreateClient("fsim");
+            var client = new RestClient(url);
+            var request = new RestRequest();
 
-            using var response = await httpClient.GetAsync(url);
-
-            // Check if response is compressed with gzip
-            //if (response.Content.Headers.ContentEncoding.Contains("gzip"))
-            //{
-            //    // Read compressed response content as stream
-            //    using var compressedStream = await response.Content.ReadAsStreamAsync();
-            //    using var gzipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
-            //    using var reader = new StreamReader(gzipStream);
-            //    // Read and handle uncompressed response content
-            //    var responseBody = await reader.ReadToEndAsync();
-            //    return Ok(responseBody);
-            //}
-            //else
-            //{
-                // Read uncompressed response content as string
-                var responseBody = await response.Content.ReadFromJsonAsync<object>();
-                return Ok(responseBody);
-            //}
-
-            //var responseData = await response.Content.ReadFromJsonAsync<object>();
-            //var responseStream = await response.Content.ReadAsStreamAsync();
-
-            //var buffer = new byte[16384];
-            //int bytesRead;
-            //var responseBody = new StringBuilder();
-
-            //while ((bytesRead = await responseStream.ReadAsync(buffer)) > 0)
-            //{
-            //    // Append the chunk of data to the StringBuilder
-            //    responseBody.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
-            //}
-
-            //var responseData = JsonSerializer.Deserialize<object>(responseBody.ToString());
-
-            //return Ok(responseData);
+            var response = await client.ExecuteGetAsync(request);
+            var resObject = JsonConvert.DeserializeObject<PricesRequestDto>(response.Content);
+            return Ok(resObject);
         }
         #endregion
 
@@ -267,7 +232,7 @@ namespace OrchardCore.SimService.SimApi
             var request = new RestRequest();
 
             var response = await client.ExecuteGetAsync(request);
-            var resObject = JsonSerializer.Deserialize<PricesRequestDto>(response.Content);
+            var resObject = JsonConvert.DeserializeObject<PricesRequestDto>(response.Content);
             return Ok(resObject);
         }
         #endregion
@@ -319,7 +284,7 @@ namespace OrchardCore.SimService.SimApi
             var request = new RestRequest();
 
             var response = await client.ExecuteGetAsync(request);
-            var resObject = JsonSerializer.Deserialize<PricesByProductDto>(response.Content);
+            var resObject = JsonConvert.DeserializeObject<PricesByProductDto>(response.Content);
             return Ok(resObject);
         }
         #endregion
@@ -350,7 +315,7 @@ namespace OrchardCore.SimService.SimApi
             //return Ok(response);
 
             var response = await client.ExecuteGetAsync(request);
-            var resObject = JsonSerializer.Deserialize<PricesByCountryandProduct>(response.Content);
+            var resObject = JsonConvert.DeserializeObject<PricesByCountryandProduct>(response.Content);
             return Ok(resObject);
         }
         #endregion

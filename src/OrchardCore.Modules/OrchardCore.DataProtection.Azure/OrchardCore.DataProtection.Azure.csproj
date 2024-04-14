@@ -15,7 +15,6 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Extensions.AspNetCore.DataProtection.Blobs" />
-    <PackageReference Include="Azure.Identity" Version="1.11.0" />
   </ItemGroup>
 
   <ItemGroup>

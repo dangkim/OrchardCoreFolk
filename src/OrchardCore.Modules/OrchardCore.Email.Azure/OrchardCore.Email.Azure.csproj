@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Communication.Email" />
-    <PackageReference Include="Azure.Identity" Version="1.11.0" />
   </ItemGroup>
 
 </Project>
