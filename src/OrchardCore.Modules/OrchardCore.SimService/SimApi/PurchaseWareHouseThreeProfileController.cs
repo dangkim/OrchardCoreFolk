@@ -281,7 +281,7 @@ namespace OrchardCore.SimService.SimApi
             decimal rubRateDouble = Decimal.Parse(rubRateString);
 
             string checkNumber = new Regex(@"(?<=\().+?(?=\))").Match(operato).Value;
-            if (string.IsNullOrEmpty(checkNumber) || !checkNumber.Equals(product.ToString()))
+            if (string.IsNullOrEmpty(checkNumber) || !checkNumber.Equals(product.ToString(), StringComparison.Ordinal))
             {
                 throw new Exception("Product Id is incorrect!");
             }

@@ -421,15 +421,15 @@ namespace OrchardCore.SimService.SimApi
             {
                 if (status == "RECEIVED" || status == "PENDING")
                 {
-                    orderTypes = orderTypes.With<OrderDetailPartIndex>(p => p.Status.Contains(status.ToLower()) && p.Expires > DateTime.UtcNow);
+                    orderTypes = orderTypes.With<OrderDetailPartIndex>(p => p.Status.Contains(status, StringComparison.CurrentCultureIgnoreCase) && p.Expires > DateTime.UtcNow);
                 }
                 else
                 {
-                    orderTypes = orderTypes.With<OrderDetailPartIndex>(p => p.Status.Contains(status.ToLower()));
+                    orderTypes = orderTypes.With<OrderDetailPartIndex>(p => p.Status.Contains(status, StringComparison.CurrentCultureIgnoreCase));
                 }
             }
 
-            if (order.ToLower() == "id")
+            if (order.Equals("id", StringComparison.OrdinalIgnoreCase))
             {
                 if (reverse)
                 {
@@ -443,7 +443,7 @@ namespace OrchardCore.SimService.SimApi
                 }
 
             }
-            else if (order.ToLower() == "product_name")
+            else if (order.Equals("product_name", StringComparison.OrdinalIgnoreCase))
             {
                 if (reverse)
                 {
@@ -456,7 +456,7 @@ namespace OrchardCore.SimService.SimApi
                     return sortedOrderTypes;
                 }
             }
-            else if (order.ToLower() == "created_at")
+            else if (order.Equals("created_at", StringComparison.OrdinalIgnoreCase))
             {
                 if (reverse)
                 {
@@ -469,7 +469,7 @@ namespace OrchardCore.SimService.SimApi
                     return sortedOrderTypes;
                 }
             }
-            else if (order.ToLower() == "country")
+            else if (order.Equals("country", StringComparison.OrdinalIgnoreCase))
             {
                 if (reverse)
                 {
@@ -482,7 +482,7 @@ namespace OrchardCore.SimService.SimApi
                     return sortedOrderTypes;
                 }
             }
-            else if (order.ToLower() == "phone_phone")
+            else if (order.Equals("phone_phone", StringComparison.OrdinalIgnoreCase))
             {
                 if (reverse)
                 {
@@ -495,7 +495,7 @@ namespace OrchardCore.SimService.SimApi
                     return sortedOrderTypes;
                 }
             }
-            else if (order.ToLower() == "status")
+            else if (order.Equals("status", StringComparison.OrdinalIgnoreCase))
             {
                 if (reverse)
                 {
@@ -525,7 +525,7 @@ namespace OrchardCore.SimService.SimApi
                 totalSearch = await _session
                     .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published)
                     .With<OrderDetailPartIndex>(p => p.UserId == userId
-                            && p.Status.Contains(status.ToLower())
+                            && p.Status.Contains(status, StringComparison.CurrentCultureIgnoreCase)
                             && p.Phone.Contains(phone)
                             && p.Created_at >= parsedDate && p.Created_at <= parsedDate.AddDays(1)).CountAsync();
             }
@@ -535,7 +535,7 @@ namespace OrchardCore.SimService.SimApi
                 totalSearch = await _session
                     .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published)
                     .With<OrderDetailPartIndex>(p => p.UserId == userId
-                            && p.Status.Contains(status.ToLower())
+                            && p.Status.Contains(status, StringComparison.CurrentCultureIgnoreCase)
                             && p.Phone.Contains(phone)).CountAsync();
             }
 
@@ -545,7 +545,7 @@ namespace OrchardCore.SimService.SimApi
                 totalSearch = await _session
                     .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published)
                     .With<OrderDetailPartIndex>(p => p.UserId == userId
-                            && p.Status.Contains(status.ToLower())
+                            && p.Status.Contains(status, StringComparison.CurrentCultureIgnoreCase)
                             && p.Created_at >= parsedDate && p.Created_at <= parsedDate.AddDays(1)).CountAsync();
             }
 
@@ -570,7 +570,7 @@ namespace OrchardCore.SimService.SimApi
             {
                 totalSearch = await _session
                     .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published)
-                    .With<OrderDetailPartIndex>(p => p.UserId == userId && p.Status.Contains(status.ToLower())).CountAsync();
+                    .With<OrderDetailPartIndex>(p => p.UserId == userId && p.Status.Contains(status, StringComparison.CurrentCultureIgnoreCase)).CountAsync();
             }
 
             else if (!string.IsNullOrEmpty(date))

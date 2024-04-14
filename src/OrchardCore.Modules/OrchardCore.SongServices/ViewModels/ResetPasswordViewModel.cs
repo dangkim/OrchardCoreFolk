@@ -25,7 +25,7 @@ namespace OrchardCore.SongServices.ViewModels
             {
                 yield return new ValidationResult(S["Email is required."], new[] { nameof(Email) });
             }
-            else if (Email.IndexOf('@') == -1 || !MailboxAddress.TryParse(Email, out var emailAddress))
+            else if (!Email.Contains('@') || !MailboxAddress.TryParse(Email, out var emailAddress))
             {
                 yield return new ValidationResult(S["Invalid Email."], new[] { nameof(Email) });
             }

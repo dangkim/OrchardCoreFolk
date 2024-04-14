@@ -78,7 +78,7 @@ namespace OrchardCore.SimService.Services
 
                     var uids = await inbox.SearchAsync(SearchQuery.NotSeen, cancellationToken);
 
-                    var messages = inbox.Fetch(uids, MessageSummaryItems.UniqueId | MessageSummaryItems.Envelope | MessageSummaryItems.Flags)
+                    var messages = inbox.Fetch(uids, MessageSummaryItems.UniqueId | MessageSummaryItems.Envelope | MessageSummaryItems.Flags, cancellationToken: cancellationToken)
                                .OrderByDescending(summary => summary.Envelope.Date)
                                .Take(10);
 

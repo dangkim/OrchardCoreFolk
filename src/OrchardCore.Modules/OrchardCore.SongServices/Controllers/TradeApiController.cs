@@ -981,7 +981,7 @@ namespace OrchardCore.Content.Controllers
             .With<TradeFilteringPartIndex>(p => p.Status == "pending" && (p.Buyer == name || p.Seller == name))
             .ListAsync();
 
-            if (trades.Count() > 0)
+            if (trades.Any())
             {
                 return true;
             }

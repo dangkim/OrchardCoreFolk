@@ -877,7 +877,7 @@ namespace OrchardCore.SongServices.Controllers
                     if (registrationSettings.UsersCanRegister == UserRegistrationType.NoRegistration)
                     {
                         string message = S["Site does not allow user registration."];
-                        _logger.LogWarning(message);
+                        _logger.LogWarning("{Message}", message);
                         ModelState.AddModelError("", message);
                     }
                     else
@@ -1052,7 +1052,7 @@ namespace OrchardCore.SongServices.Controllers
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error Syncing Roles From External Provider {0}", info.LoginProvider);
+                    _logger.LogError(ex, "Error Syncing Roles From External Provider {info.LoginProvider}", info.LoginProvider);
                 }
             }
             else
@@ -1149,7 +1149,7 @@ namespace OrchardCore.SongServices.Controllers
             return ret;
         }
 
-        private IActionResult LoggedInActionResult(IUser user, string returnUrl = null, ExternalLoginInfo info = null)
+        private RedirectResult LoggedInActionResult(IUser user, string returnUrl = null, ExternalLoginInfo info = null)
         {
             var workflowManager = HttpContext.RequestServices.GetService<IWorkflowManager>();
             if (workflowManager != null)
@@ -1174,7 +1174,7 @@ namespace OrchardCore.SongServices.Controllers
             }
         }
 
-        private IActionResult RedirectToLocal(string returnUrl)
+        private RedirectResult RedirectToLocal(string returnUrl)
         {
             var url = _config["VxFulFrontendUrl"] + returnUrl;
 

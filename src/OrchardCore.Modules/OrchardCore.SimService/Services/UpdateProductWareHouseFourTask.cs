@@ -48,14 +48,14 @@ namespace OrchardCore.SimService.Services
                 var client = new RestClient(url);
                 var request = new RestRequest();
 
-                var response = await client.ExecuteGetAsync(request);
+                var response = await client.ExecuteGetAsync(request, cancellationToken: cancellationToken);
                 var resObject = JsonConvert.DeserializeObject<ProductsWareHouseFourRequestDto>(response.Content);
 
                 var productWareHouseFourContent = await session
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "WareHouseUSAProducts" && index.DisplayText == "Product1" && index.Published && index.Latest)
                 .FirstOrDefaultAsync();
 
-                if (productWareHouseFourContent != null && resObject.status.Equals("ok"))
+                if (productWareHouseFourContent != null && resObject.status.Equals("ok", StringComparison.Ordinal))
                 {
                     dynamic echangeProductObj = productWareHouseFourContent.Content;
 
@@ -74,7 +74,7 @@ namespace OrchardCore.SimService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError("{ex.Message}", ex.Message);
             }
 
             return;

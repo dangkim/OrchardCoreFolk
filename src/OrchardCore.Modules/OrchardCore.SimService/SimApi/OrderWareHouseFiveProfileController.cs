@@ -123,7 +123,7 @@ namespace OrchardCore.SimService.SimApi
 
             var resObject = await ApiCommon.CheckOrderWareHouseFiveAsync(vSimToken, id, inventory);
 
-            if (orderDetailPart.Status.ToString().ToLower() != resObject.Status.ToLower())
+            if (!orderDetailPart.Status.ToString().ToLower().Equals(resObject.Status, StringComparison.CurrentCultureIgnoreCase))
             {
                 var newOrderDetailPart = new OrderDetailPart
                 {
@@ -153,7 +153,7 @@ namespace OrchardCore.SimService.SimApi
                 }
             }
 
-            if (resObject.Status.ToLower() == OrderStatusLSimEnum.SUCCESS.ToString().ToLower())
+            if (resObject.Status.Equals(OrderStatusLSimEnum.SUCCESS.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 // Create List of SmsType and insert this list to OrderType
                 foreach (var itemSms in resObject.Sms)

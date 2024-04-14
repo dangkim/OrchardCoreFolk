@@ -37,7 +37,7 @@ namespace OrchardCore.SimService.RedocAttributeProcessors
         }
     }
 
-    internal class ReDocCodeSample
+    public class ReDocCodeSample
     {
         [JsonProperty("lang")]
         public string Language { get; set; }

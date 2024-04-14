@@ -127,7 +127,7 @@ namespace OrchardCore.SimService.SimApi
 
             var resObject = await ApiCommon.CheckOrderAsync(simToken, id, inventory);
 
-            if (orderDetailPart.Status.ToString().ToLower() != resObject.Status.ToLower())
+            if (!orderDetailPart.Status.ToString().ToLower().Equals(resObject.Status, StringComparison.CurrentCultureIgnoreCase))
             {
                 var newOrderDetailPart = new OrderDetailPart
                 {
@@ -159,7 +159,7 @@ namespace OrchardCore.SimService.SimApi
 
             if (resObject.Sms.Count > 0)
             {
-                if (resObject.Status.ToLower() != "finished")
+                if (!resObject.Status.Equals("finished", StringComparison.OrdinalIgnoreCase))
                 {
                     // Create List of SmsType and insert this list to OrderType
                     foreach (var itemSms in resObject.Sms)

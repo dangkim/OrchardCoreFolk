@@ -79,7 +79,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
                     var userProfilePart = content["UserProfilePart"];
                     decimal currentBalance = content["UserProfilePart"].Balance;
 
-                    logger.LogError($"UpdateSixSimBalanceByCoin: {updateBalanceModel.Amount} Rate: {updateBalanceModel.Rate}");
+                    logger.LogError("UpdateSixSimBalanceByCoin: {Amount} Rate: {Rate}", updateBalanceModel.Amount, updateBalanceModel.Rate);
 
                     var amount = Decimal.Parse(updateBalanceModel.Amount) * Decimal.Parse(updateBalanceModel.Rate); // All is RUB currency
                     currentBalance += amount;
@@ -175,7 +175,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
                     var userProfilePart = content["UserProfilePart"];
                     decimal currentBalance = content["UserProfilePart"].Balance;
 
-                    logger.LogError($"UpdateSixSimBalanceByCoin: {updateBalanceModel.Amount} Rate: {updateBalanceModel.Rate}");
+                    logger.LogError("UpdateSixSimBalanceByCoin: {Amount} Rate: {Rate}", updateBalanceModel.Amount, updateBalanceModel.Rate);
 
                     var amount = Decimal.Parse(updateBalanceModel.Amount) * Decimal.Parse(updateBalanceModel.Rate); // All is RUB currency
                     currentBalance += amount;
@@ -763,7 +763,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
                 var responseStatus = await clientStatus.ExecuteGetAsync(requestStatus);
 
                 var resObjectStatus = JsonConvert.DeserializeObject<CheckStatusOrderWareHouseFourDto>(responseStatus.Content);
-                if (!resObjectStatus.status.Equals("ok"))
+                if (!resObjectStatus.status.Equals("ok", StringComparison.Ordinal))
                 {
                     throw new Exception(resObjectStatus.message.ToString());
                 }
@@ -771,15 +771,15 @@ namespace OrchardCore.SimService.ApiCommonFunctions
                 var smsUSim = new SmsPartViewModel();
 
                 string USimStatusOrder = "";
-                if (resObjectStatus.message.status.Equals("Rejected"))
+                if (resObjectStatus.message.status.Equals("Rejected", StringComparison.Ordinal))
                 {
                     USimStatusOrder = Enum.GetName(typeof(OrderStatusLSimEnum), OrderStatusLSimEnum.CANCELED);
                 }
-                else if (resObjectStatus.message.status.Equals("Reserved") || resObjectStatus.message.status.Equals("Awaiting MDN"))
+                else if (resObjectStatus.message.status.Equals("Reserved", StringComparison.Ordinal) || resObjectStatus.message.status.Equals("Awaiting MDN", StringComparison.Ordinal))
                 {
                     USimStatusOrder = Enum.GetName(typeof(OrderStatusLSimEnum), OrderStatusLSimEnum.WAITING);
                 }
-                else if (resObjectStatus.message.status.Equals("Completed"))
+                else if (resObjectStatus.message.status.Equals("Completed", StringComparison.Ordinal))
                 {
                     USimStatusOrder = Enum.GetName(typeof(OrderStatusLSimEnum), OrderStatusLSimEnum.SUCCESS);
 
@@ -789,7 +789,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
                     var responseSms = await clientSms.ExecuteGetAsync(requestSms);
 
                     var resObjectSms = JsonConvert.DeserializeObject<CheckOrderWareHouseFourDto>(responseSms.Content);
-                    if (!resObjectSms.status.Equals("ok"))
+                    if (!resObjectSms.status.Equals("ok", StringComparison.Ordinal))
                     {
                         throw new Exception(resObjectSms.message.ToString());
                     }
@@ -856,7 +856,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
                 {
                     resObjectStatus = JsonConvert.DeserializeObject<CheckStatusOrderWareHouseFourLongTermDto>(responseStatus.Content);
 
-                    if (!resObjectStatus.status.Equals("ok"))
+                    if (!resObjectStatus.status.Equals("ok", StringComparison.Ordinal))
                     {
                         throw new Exception(resObjectStatus.message.ToString());
                     }
@@ -871,7 +871,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
                     var responseActive = await clientStatus.ExecuteGetAsync(requestActive);
                     resObjectStatusActive = JsonConvert.DeserializeObject<CheckStatusOrderWareHouseFourLongTermDto>(responseActive.Content);
 
-                    if (resObjectStatusActive.message.ltr_status.Equals("online"))
+                    if (resObjectStatusActive.message.ltr_status.Equals("online", StringComparison.Ordinal))
                     {
                         if (!CheckExpriesDay(resObjectStatusActive.message.date_time))
                         {
@@ -897,7 +897,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
                     var responseSms = await clientSms.ExecuteGetAsync(requestSms);
 
                     resObjectSms = JsonConvert.DeserializeObject<CheckOrderWareHouseFourDto>(responseSms.Content);
-                    if (!resObjectSms.status.Equals("ok"))
+                    if (!resObjectSms.status.Equals("ok", StringComparison.Ordinal))
                     {
                         throw new Exception(resObjectSms.message.ToString());
                     }

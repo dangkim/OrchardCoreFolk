@@ -127,7 +127,7 @@ namespace OrchardCore.SimService.SimApi
                 .OrderByDescending(x => x.Id)
                 .Take(limit).Skip(offset).ListAsync();
             }
-            else if (order.ToLower() == "balance")
+            else if (order.Equals("balance", StringComparison.OrdinalIgnoreCase))
             {
                 paymentTypes = await _session
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "PaymentType" && index.Published)
@@ -135,7 +135,7 @@ namespace OrchardCore.SimService.SimApi
                 .OrderByDescending(x => x.Balance)
                 .Take(limit).Skip(offset).ListAsync();
             }
-            else if (order.ToLower() == "amount")
+            else if (order.Equals("amount", StringComparison.OrdinalIgnoreCase))
             {
                 paymentTypes = await _session
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "PaymentType" && index.Published)
@@ -143,7 +143,7 @@ namespace OrchardCore.SimService.SimApi
                 .OrderByDescending(x => x.Amount)
                 .Take(limit).Skip(offset).ListAsync();
             }
-            else if (order.ToLower() == "created_at")
+            else if (order.Equals("created_at", StringComparison.OrdinalIgnoreCase))
             {
                 paymentTypes = await _session
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "PaymentType" && index.Published)

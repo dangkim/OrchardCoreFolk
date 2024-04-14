@@ -147,7 +147,7 @@ namespace OrchardCore.SimService.SimApi
                 }
 
                 var url = "";
-                if (string.IsNullOrEmpty(network) || network.Equals("null"))
+                if (string.IsNullOrEmpty(network) || network.Equals("null", StringComparison.Ordinal))
                 {
                     switch (country)
                     {
@@ -331,7 +331,7 @@ namespace OrchardCore.SimService.SimApi
                     return Forbid();
                 }
 
-                var url = string.Format("https://api.viotp.com/request/getv2?token={0}&serviceId={2}&number={3}", vSimToken, serviceId, number);
+                var url = string.Format("https://api.viotp.com/request/getv2?token={0}&serviceId={1}&number={2}", vSimToken, serviceId, number);
 
                 var client = new RestClient(url);
                 var request = new RestRequest();

@@ -93,7 +93,7 @@ namespace OrchardCore.SimService.SimApi
 
             var resObject = JsonConvert.DeserializeObject<ProductsWareHouseFourRequestDto>(productString);
 
-            if (!resObject.status.Equals("ok"))
+            if (!resObject.status.Equals("ok", StringComparison.Ordinal))
             {
                 return BadRequest();
             }
@@ -155,7 +155,7 @@ namespace OrchardCore.SimService.SimApi
             var response = await client.ExecuteGetAsync(request);
             var resObject = JsonConvert.DeserializeObject<ProductsWareHouseFourRequestDto>(response.Content);
 
-            if (!resObject.status.Equals("ok"))
+            if (!resObject.status.Equals("ok", StringComparison.Ordinal))
             {
                 return BadRequest();
             }

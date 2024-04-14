@@ -148,7 +148,7 @@ namespace OrchardCore.SimService.SimApi
                 }
 
                 var url = "";
-                if (string.IsNullOrEmpty(carrier) || carrier.Equals("us"))
+                if (string.IsNullOrEmpty(carrier) || carrier.Equals("us", StringComparison.Ordinal))
                 {
                     url = string.Format("https://www.unitedsms.net/api_command.php?cmd=request&{0}&service={1}", uSimToken, service);
                 }
@@ -164,7 +164,7 @@ namespace OrchardCore.SimService.SimApi
 
                 var resObject = JsonConvert.DeserializeObject<BuyActionNumberWareHouseFourDto>(response.Content);
 
-                if (!resObject.status.Equals("ok"))
+                if (!resObject.status.Equals("ok", StringComparison.Ordinal))
                 {
                     return Ok("Error.");
                 }
@@ -299,7 +299,7 @@ namespace OrchardCore.SimService.SimApi
                 }
 
                 var url = "";
-                if (string.IsNullOrEmpty(carrier) || carrier.Equals("us"))
+                if (string.IsNullOrEmpty(carrier) || carrier.Equals("us", StringComparison.Ordinal))
                 {
                     url = string.Format("https://www.unitedsms.net/api_command.php?cmd=ltr_rent&{0}&service={1}", uSimToken, service);
                 }
@@ -315,7 +315,7 @@ namespace OrchardCore.SimService.SimApi
 
                 var resObject = JsonConvert.DeserializeObject<BuyActionNumberWareHouseFourLongTermDto>(response.Content);
 
-                if (!resObject.status.Equals("ok"))
+                if (!resObject.status.Equals("ok", StringComparison.Ordinal))
                 {
                     return Ok("Error.");
                 }

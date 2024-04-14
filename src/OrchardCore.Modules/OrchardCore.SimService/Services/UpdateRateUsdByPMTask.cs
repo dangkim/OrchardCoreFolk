@@ -49,7 +49,7 @@ namespace OrchardCore.SimService.Services
                 var request = new RestRequest();
                 request.AddHeader("Authorization", "Bearer " + fiveSimToken);
 
-                var response = await client.ExecuteGetAsync(request);
+                var response = await client.ExecuteGetAsync(request, cancellationToken: cancellationToken);
 
                 var resObject = JsonConvert.DeserializeObject<RateFiveSim>(response.Content);
 
@@ -76,7 +76,7 @@ namespace OrchardCore.SimService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex, "{Message}", ex.Message);
             }
 
             return;

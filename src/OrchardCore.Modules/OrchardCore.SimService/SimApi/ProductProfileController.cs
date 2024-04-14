@@ -357,7 +357,7 @@ namespace OrchardCore.SimService.SimApi
 
         #endregion
 
-        private void AddProperty(ExpandoObject expando, string propertyName, object propertyValue)
+        private static void AddProperty(ExpandoObject expando, string propertyName, object propertyValue)
         {
             // ExpandoObject supports IDictionary so we can extend it like this
             var expandoDict = expando as IDictionary<string, object>;

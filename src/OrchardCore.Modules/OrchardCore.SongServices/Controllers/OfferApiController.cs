@@ -211,7 +211,7 @@ namespace OrchardCore.Content.Controllers
 
             IEnumerable<ContentItem> offers = null;
 
-            if (offerModel.Method.ToLower() == "all" && offerModel.Currency.ToLower() == "all")
+            if (offerModel.Method.Equals("all", StringComparison.OrdinalIgnoreCase) && offerModel.Currency.Equals("all", StringComparison.OrdinalIgnoreCase))
             {
                 offers = await _session
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OfferPage" && index.Published && index.Latest && index.Author != User.Identity.Name).OrderByDescending(index => index.CreatedUtc)
@@ -238,7 +238,7 @@ namespace OrchardCore.Content.Controllers
                 }
                 else
                 {
-                    offers = await _session 
+                    offers = await _session
                     .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OfferPage" && index.Published && index.Latest && index.Author != User.Identity.Name).OrderByDescending(index => index.CreatedUtc)
                     .With<OfferFilteringPartIndex>(p => p.MinAmount >= offerModel.MinAmount
                                                             && p.MaxAmount <= offerModel.MaxAmount
@@ -309,7 +309,7 @@ namespace OrchardCore.Content.Controllers
 
             IEnumerable<ContentItem> offers = null;
 
-            if (offerModel.Method.ToLower() == "all" && offerModel.Currency.ToLower() == "all")
+            if (offerModel.Method.Equals("all", StringComparison.OrdinalIgnoreCase) && offerModel.Currency.Equals("all", StringComparison.OrdinalIgnoreCase))
             {
                 offers = await _session
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OfferPage" && index.Published && index.Latest && index.Author != User.Identity.Name).OrderByDescending(index => index.CreatedUtc)
@@ -405,10 +405,10 @@ namespace OrchardCore.Content.Controllers
         {
             IEnumerable<ContentItem> offers = null;
 
-            if (offerModel.Wallet.ToLower() == "all"
-                && offerModel.Currency.ToLower() == "all"
-                && offerModel.Method.ToLower() == "all"
-                && offerModel.OfferType.ToLower() == "all")
+            if (offerModel.Wallet.Equals("all", StringComparison.OrdinalIgnoreCase)
+                && offerModel.Currency.Equals("all", StringComparison.OrdinalIgnoreCase)
+                && offerModel.Method.Equals("all", StringComparison.OrdinalIgnoreCase)
+                && offerModel.OfferType.Equals("all", StringComparison.OrdinalIgnoreCase))
             {
                 offers = await _session
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OfferPage" && index.Published && index.Latest).OrderByDescending(index => index.CreatedUtc)
@@ -891,7 +891,7 @@ namespace OrchardCore.Content.Controllers
                 };
             }
 
-            
+
 
             return Ok(offerModel);
         }

@@ -30,7 +30,11 @@ public class ReadOnlyStoreWrapper : IReadOnlyYesSqlStore
         return _store.Describe(target, collection);
     }
 
-    public void Dispose() => _store.Dispose();
+    public void Dispose()
+    {
+        _store.Dispose();
+        GC.SuppressFinalize(this);
+    }
 
     public Task InitializeAsync()
     {

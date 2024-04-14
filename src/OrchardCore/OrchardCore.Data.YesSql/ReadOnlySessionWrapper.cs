@@ -57,9 +57,17 @@ public class ReadOnlySessionWrapper : IReadOnlySession
         _session.Detach(entries, collection);
     }
 
-    public void Dispose() => _session.Dispose();
+    public void Dispose()
+    {
+        _session.Dispose();
+        GC.SuppressFinalize(this);
+    }
 
-    public ValueTask DisposeAsync() => _session.DisposeAsync();
+    public ValueTask DisposeAsync()
+    {
+        GC.SuppressFinalize(this);
+        return _session.DisposeAsync();
+    }
 
     public IQuery<T> ExecuteQuery<T>(ICompiledQuery<T> compiledQuery, string collection = null) where T : class
     {

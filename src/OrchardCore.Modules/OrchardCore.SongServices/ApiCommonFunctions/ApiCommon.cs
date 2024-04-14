@@ -31,7 +31,7 @@ namespace OrchardCore.SongServices.ApiCommonFunctions
             {
                 var trade = item.As<TradeFilteringPart>();
 
-                if ((trade.TradeStatus.ToLower() != "cancel" && trade.TradeStatus.ToLower() != "completed") || trade.OfferType.ToLower() == "withdraw")
+                if ((!trade.TradeStatus.Equals("cancel", StringComparison.OrdinalIgnoreCase) && !trade.TradeStatus.Equals("completed", StringComparison.OrdinalIgnoreCase)) || trade.OfferType.Equals("withdraw", StringComparison.OrdinalIgnoreCase))
                 {
                     var tradeAmountBtc = trade.TradeBTCAmount;
                     var feeAmountBtc = trade.FeeBTCAmount;
@@ -93,10 +93,10 @@ namespace OrchardCore.SongServices.ApiCommonFunctions
                     OfferWallet = "NA",
                     Seller = "NA",
                     SellerContentId = "NA",
-                    TradeBTCAmount = updateBalanceModel.Crypto.ToLower() == "btc" ? Decimal.Parse(updateBalanceModel.Amount) : 0m,
-                    TradeETHAmount = updateBalanceModel.Crypto.ToLower() == "eth" ? Decimal.Parse(updateBalanceModel.Amount) : 0m,
-                    TradeUSDT20Amount = (updateBalanceModel.Crypto.ToLower() == "usdt20") ? Decimal.Parse(updateBalanceModel.Amount) : 0m,
-                    TradeVNDAmount = updateBalanceModel.Wallet.ToLower() == "vnd" ? Decimal.Parse(updateBalanceModel.Amount) : 0m,
+                    TradeBTCAmount = updateBalanceModel.Crypto.Equals("btc", StringComparison.OrdinalIgnoreCase) ? Decimal.Parse(updateBalanceModel.Amount) : 0m,
+                    TradeETHAmount = updateBalanceModel.Crypto.Equals("eth", StringComparison.OrdinalIgnoreCase) ? Decimal.Parse(updateBalanceModel.Amount) : 0m,
+                    TradeUSDT20Amount = (updateBalanceModel.Crypto.Equals("usdt20", StringComparison.OrdinalIgnoreCase)) ? Decimal.Parse(updateBalanceModel.Amount) : 0m,
+                    TradeVNDAmount = updateBalanceModel.Wallet.Equals("vnd", StringComparison.OrdinalIgnoreCase) ? Decimal.Parse(updateBalanceModel.Amount) : 0m,
                     TradeType = tradeType,
                     DateTime = DateTime.Now
                 };
@@ -116,7 +116,7 @@ namespace OrchardCore.SongServices.ApiCommonFunctions
                     {
                         var traderPart = contentItemTrader.As<TraderForFilteringPart>();
 
-                        if (updateBalanceModel.Crypto.ToLower() == "eth")
+                        if (updateBalanceModel.Crypto.Equals("eth", StringComparison.OrdinalIgnoreCase))
                         {
                             ethBalanceValue += Decimal.Parse(updateBalanceModel.Amount);
 
@@ -133,7 +133,7 @@ namespace OrchardCore.SongServices.ApiCommonFunctions
 
                             traderPart.ETHBalance = currentETHBalance;
                         }
-                        else if (updateBalanceModel.Crypto.ToLower() == "btc")
+                        else if (updateBalanceModel.Crypto.Equals("btc", StringComparison.OrdinalIgnoreCase))
                         {
                             btcBalanceValue += Decimal.Parse(updateBalanceModel.Amount);
 
@@ -150,7 +150,7 @@ namespace OrchardCore.SongServices.ApiCommonFunctions
 
                             traderPart.BTCBalance = currentBTCBalance;
                         }
-                        else if (updateBalanceModel.Crypto.ToLower() == "usdt20")
+                        else if (updateBalanceModel.Crypto.Equals("usdt20", StringComparison.OrdinalIgnoreCase))
                         {
                             usdtBalanceValue += Decimal.Parse(updateBalanceModel.Amount);
 
@@ -167,7 +167,7 @@ namespace OrchardCore.SongServices.ApiCommonFunctions
 
                             traderPart.USDT20Balance = currentUSDTBalance;
                         }
-                        else if (updateBalanceModel.Wallet.ToLower() == "vnd")
+                        else if (updateBalanceModel.Wallet.Equals("vnd", StringComparison.OrdinalIgnoreCase))
                         {
                             vndBalanceValue += Decimal.Parse(updateBalanceModel.Amount);
 

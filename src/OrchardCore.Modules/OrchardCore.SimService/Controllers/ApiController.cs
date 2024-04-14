@@ -583,7 +583,7 @@ namespace OrchardCore.SimService.Controllers
                     if (registrationSettings.UsersCanRegister == UserRegistrationType.NoRegistration)
                     {
                         string message = S["Site does not allow user registration."];
-                        _logger.LogWarning(message);
+                        _logger.LogWarning("{Message}", message);
                         ModelState.AddModelError("", message);
                     }
                     else
@@ -774,7 +774,7 @@ namespace OrchardCore.SimService.Controllers
             }
         }
 
-        private IActionResult RedirectToLocal(string returnUrl, string userName = "", string email = "", bool isFromGoogle = false)
+        private RedirectResult RedirectToLocal(string returnUrl, string userName = "", string email = "", bool isFromGoogle = false)
         {
             if (isFromGoogle)
             {

@@ -449,7 +449,7 @@ namespace OrchardCore.SimService.Controllers
                         statusCode: (int)HttpStatusCode.BadRequest);
         }
 
-        private bool GetAPIKey(HttpContext httpContext, out StringValues apiKey)
+        private static bool GetAPIKey(HttpContext httpContext, out StringValues apiKey)
         {
             if (httpContext.Request.Headers.TryGetValue("Authorization", out var value) &&
                 value.ToString().StartsWith("token ", StringComparison.InvariantCultureIgnoreCase))
