@@ -36,7 +36,7 @@ namespace OrchardCore.SimService.SimApi
         /// Returns a list of countries with available operators for purchase.
         /// </remarks> 
         [HttpGet]
-        [ActionName("getcountries")]
+        [ActionName("getstablecountries")]
         [ProducesResponseType(typeof(GetCountriesListDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]

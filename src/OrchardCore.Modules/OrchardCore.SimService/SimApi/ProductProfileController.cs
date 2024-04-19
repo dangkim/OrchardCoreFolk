@@ -76,7 +76,7 @@ namespace OrchardCore.SimService.SimApi
         /// Provides payments history.
         /// </remarks>
         [HttpGet]
-        [ActionName("products")]
+        [ActionName("getstableproducts")]
         [ProducesResponseType(typeof(ProductsRequestDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]

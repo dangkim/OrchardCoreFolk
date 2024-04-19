@@ -76,7 +76,7 @@ namespace OrchardCore.SongServices.Controllers
 
                 if (controller.ModelState.IsValid)
                 {
-                    var user = await userService.CreateUserAsync(new User { UserName = model.UserName, Email = model.Email, EmailConfirmed = !settings.UsersMustValidateEmail, RoleNames = new string[] { "NormalUser" } }, model.Password, (key, message) => controller.ModelState.AddModelError(key, message)) as User;
+                    var user = await userService.CreateUserAsync(new User { UserName = model.UserName, Email = model.Email, EmailConfirmed = !settings.UsersMustValidateEmail, RoleNames = ["NormalUser"] }, model.Password, (key, message) => controller.ModelState.AddModelError(key, message)) as User;
 
                     if (user != null && controller.ModelState.IsValid)
                     {

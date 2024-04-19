@@ -396,7 +396,7 @@ namespace OrchardCore.SongServices.Controllers
         }
 
         [HttpPost]
-        [ActionName("Register")]
+        [ActionName("RegisterSptb")]
         [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterModel model)
         {
@@ -523,7 +523,7 @@ namespace OrchardCore.SongServices.Controllers
 
         }
 
-        [ActionName("ForgetPassword")]
+        [ActionName("ForgetPasswordSptb")]
         [AllowAnonymous]
         public async Task<IActionResult> ForgetPassword(RegisterModel model)
         {
@@ -558,7 +558,7 @@ namespace OrchardCore.SongServices.Controllers
         }
 
         [HttpPost]
-        [ActionName("ResetPassword")]
+        [ActionName("ResetPasswordSptb")]
         [AllowAnonymous]
         public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
         {
@@ -715,7 +715,7 @@ namespace OrchardCore.SongServices.Controllers
         }
 
         [HttpGet]
-        [ActionName("ConfirmEmail")]
+        [ActionName("ConfirmEmailSptb")]
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
@@ -804,7 +804,7 @@ namespace OrchardCore.SongServices.Controllers
         }
 
         [HttpPost]
-        [ActionName("ExternalLogin")]
+        [ActionName("ExternalLoginSptb")]
         [AllowAnonymous]
         public IActionResult ExternalLogin(string provider, string returnUrl = null)
         {
@@ -815,7 +815,7 @@ namespace OrchardCore.SongServices.Controllers
         }
 
         [HttpGet]
-        [ActionName("ExternalLoginCallback")]
+        [ActionName("ExternalLoginCallbackSptb")]
         [AllowAnonymous]
         public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
         {
@@ -933,6 +933,7 @@ namespace OrchardCore.SongServices.Controllers
         }
 
         [HttpGet]
+        [ActionName("LoginSptb")]
         [AllowAnonymous]
         public async Task<IActionResult> Login(string returnUrl = null)
         {
@@ -1000,7 +1001,6 @@ namespace OrchardCore.SongServices.Controllers
             }
             return RedirectToAction(nameof(Login));
         }
-
 
         private static bool IsEmail(string str)
         {
@@ -1188,6 +1188,7 @@ namespace OrchardCore.SongServices.Controllers
             //    return Redirect("~/");
             //}
         }
+
         private static string TwoFactorKey(User user)
         {
             return $"EasierLife+{user.Email}";

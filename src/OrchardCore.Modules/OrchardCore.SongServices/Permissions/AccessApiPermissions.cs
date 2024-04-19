@@ -30,7 +30,7 @@ namespace OrchardCore.SongServices.Permissions
                 new PermissionStereotype
                 {
                     Name = "NormalUser",
-                    Permissions = new[] { AccessContentApi, ExecuteGraphQL },
+                    Permissions = [AccessContentApi, ExecuteGraphQL],
                 },
             };
     }

@@ -65,6 +65,11 @@ namespace OrchardCore.ContentTypes.Editors
 
         private static void Apply(UpdateTypeEditorContext context, ContentTypeSettingsViewModel model, ContentTypeDefinitionDriverOptions options)
         {
+            if (options.ShowDraftable)
+            {
+                context.Builder.Draftable(model.Draftable);
+            }
+
             if (options.ShowVersionable)
             {
                 context.Builder.Versionable(model.Versionable);
