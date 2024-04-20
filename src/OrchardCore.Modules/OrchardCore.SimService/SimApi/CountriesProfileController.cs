@@ -11,6 +11,10 @@ using OrchardCore.Users;
 using Microsoft.AspNetCore.Authentication;
 using OpenIddict.Server.AspNetCore;
 using System.Net.Http;
+using System.Collections.Generic;
+using System.Net.Http.Json;
+using System.Threading;
+using System.Linq;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -44,12 +48,15 @@ namespace OrchardCore.SimService.SimApi
         [AllowAnonymous]
         public async Task<IActionResult> GetCountriesListAsync()
         {
-            string url = string.Format("https://5sim.net/v1/guest/countries");
-            var client = new RestClient(url);
-            var request = new RestRequest();
+            var url = string.Format("https://5sim.net/v1/guest/countries");
 
-            var response = await client.ExecuteGetAsync(request);
-            return Ok(response.Content);
+            using var httpClient = _httpClientFactory.CreateClient("fsim");
+
+            using var response = await httpClient.GetAsync(url);
+
+            var responseData = await response.Content.ReadAsStringAsync();            
+
+            return Ok(responseData);
         }
 
         /// <summary>
@@ -91,6 +98,21 @@ namespace OrchardCore.SimService.SimApi
 
             return SignOut(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
+    }
+
+
+    public class CountryInfo
+    {
+        public Dictionary<string, int> Iso { get; set; }
+
+        public string Text_En { get; set; }
+    }
+
+    public class CountryObject
+    {
+        public string Country { get; set; }
+        public string Iso { get; set; }
+        public string TextEn { get; set; }
     }
 }
 
