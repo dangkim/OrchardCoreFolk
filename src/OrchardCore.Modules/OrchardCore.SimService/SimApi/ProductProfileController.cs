@@ -338,20 +338,17 @@ namespace OrchardCore.SimService.SimApi
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.InternalServerError)]
         [AllowAnonymous]
-        public async Task<ActionResult<PricesByCountryandProduct>> PricesByCountryandProductRequestAsync(string country, string product)
+        public async Task<ActionResult<PricesByCountryandProduct>> PricesByCountryandProductRequestAsync(string country, string sixsimoperator, string product)
         {
-            string url = string.Format("https://5sim.net/v1/guest/prices?country={0}&product={1}", country, product);
+            var url = string.Format("https://5sim.net/v1/guest/prices?country={0}&product={1}", country, product);
 
-            var client = new RestClient(url);
-            var request = new RestRequest();
-            //request.AddHeader("Authorization", "Bearer " + fiveSimToken);
-            //request.AddHeader("Accept", "application/json");
-            //var response = await client.ExecuteGetAsync<PaymentsHistoryDto>(request);
-            //return Ok(response);
+            using var httpClient = _httpClientFactory.CreateClient("fsim");
 
-            var response = await client.ExecuteGetAsync(request);
-            var resObject = JsonSerializer.Deserialize<PricesByCountryandProduct>(response.Content);
-            return Ok(resObject);
+            using var response = await httpClient.GetAsync(url);
+
+            var responseData = await response.Content.ReadAsStringAsync();
+
+            return Ok(responseData);
         }
         #endregion
 
