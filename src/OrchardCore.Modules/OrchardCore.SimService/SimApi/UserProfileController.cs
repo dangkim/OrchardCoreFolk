@@ -125,7 +125,7 @@ namespace OrchardCore.SimService.SimApi
             }
 
             var userContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserName == User.Identity.Name)
                 .FirstOrDefaultAsync();
 
@@ -134,7 +134,7 @@ namespace OrchardCore.SimService.SimApi
                 var totalPrice = 0m;
                 // Get OrderDetail to calculate balance
                 var orderContents = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
                 .With<OrderDetailPartIndex>(p => p.UserId == user.Id && (p.Status == "RECEIVED" || p.Status == "PENDING" || p.Status == OrderStatusLSimEnum.WAITING.ToString()) && p.Expires > DateTime.UtcNow)
                 .ListAsync();
 
@@ -252,7 +252,7 @@ namespace OrchardCore.SimService.SimApi
             var data = new List<object>();
 
             var total = await _session
-                   .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published)
+                   .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published)
                    .With<OrderDetailPartIndex>(p => p.UserId == user.Id).CountAsync();
 
             var totalSearch = 0;
@@ -395,7 +395,7 @@ namespace OrchardCore.SimService.SimApi
         private async Task<IEnumerable<ContentItem>> FilterOrder(long userId, string category, string date, int limit, int offset, string order, string phone, bool reverse, string status)
         {
             var orderTypes = _session
-                   .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published)
+                   .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published)
                    .With<OrderDetailPartIndex>(p => p.UserId == userId);
 
             if (!string.IsNullOrEmpty(date))
@@ -523,7 +523,7 @@ namespace OrchardCore.SimService.SimApi
             {
                 var parsedDate = DateTime.ParseExact(date, "dd-MM-yy", CultureInfo.InvariantCulture);
                 totalSearch = await _session
-                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published)
+                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published)
                     .With<OrderDetailPartIndex>(p => p.UserId == userId
                             && p.Status.Contains(status, StringComparison.CurrentCultureIgnoreCase)
                             && p.Phone.Contains(phone)
@@ -533,7 +533,7 @@ namespace OrchardCore.SimService.SimApi
             else if (!string.IsNullOrEmpty(status) && !string.IsNullOrEmpty(phone))
             {
                 totalSearch = await _session
-                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published)
+                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published)
                     .With<OrderDetailPartIndex>(p => p.UserId == userId
                             && p.Status.Contains(status, StringComparison.CurrentCultureIgnoreCase)
                             && p.Phone.Contains(phone)).CountAsync();
@@ -543,7 +543,7 @@ namespace OrchardCore.SimService.SimApi
             {
                 var parsedDate = DateTime.ParseExact(date, "dd-MM-yy", CultureInfo.InvariantCulture);
                 totalSearch = await _session
-                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published)
+                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published)
                     .With<OrderDetailPartIndex>(p => p.UserId == userId
                             && p.Status.Contains(status, StringComparison.CurrentCultureIgnoreCase)
                             && p.Created_at >= parsedDate && p.Created_at <= parsedDate.AddDays(1)).CountAsync();
@@ -553,7 +553,7 @@ namespace OrchardCore.SimService.SimApi
             {
                 var parsedDate = DateTime.ParseExact(date, "dd-MM-yy", CultureInfo.InvariantCulture);
                 totalSearch = await _session
-                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published)
+                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published)
                     .With<OrderDetailPartIndex>(p => p.UserId == userId
                             && p.Phone.Contains(phone)
                             && p.Created_at >= parsedDate && p.Created_at <= parsedDate.AddDays(1)).CountAsync();
@@ -562,14 +562,14 @@ namespace OrchardCore.SimService.SimApi
             else if (!string.IsNullOrEmpty(phone))
             {
                 totalSearch = await _session
-                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published)
+                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published)
                     .With<OrderDetailPartIndex>(p => p.UserId == userId && p.Phone.Contains(phone)).CountAsync();
             }
 
             else if (!string.IsNullOrEmpty(status))
             {
                 totalSearch = await _session
-                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published)
+                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published)
                     .With<OrderDetailPartIndex>(p => p.UserId == userId && p.Status.Contains(status, StringComparison.CurrentCultureIgnoreCase)).CountAsync();
             }
 
@@ -577,7 +577,7 @@ namespace OrchardCore.SimService.SimApi
             {
                 var parsedDate = DateTime.ParseExact(date, "dd-MM-yy", CultureInfo.InvariantCulture);
                 totalSearch = await _session
-                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published)
+                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published)
                     .With<OrderDetailPartIndex>(p => p.Created_at >= parsedDate && p.Created_at <= parsedDate.AddDays(1)).CountAsync();
             }
 

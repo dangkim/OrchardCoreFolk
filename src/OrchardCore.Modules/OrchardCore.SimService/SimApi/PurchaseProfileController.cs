@@ -20,6 +20,11 @@ using OrchardCore.Users;
 using RestSharp;
 using YesSql;
 using OrchardCore.SimService.Permissions;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using static OrchardCore.SimService.SimApi.ProductProfileController;
+using System.Collections.Generic;
+using System.Net.Http.Json;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -36,6 +41,7 @@ namespace OrchardCore.SimService.SimApi
         private readonly Microsoft.Extensions.Configuration.IConfiguration _config;
         private readonly IMemoryCache _memoryCache;
         private readonly ISignal _signal;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public PurchaseProfileController(
             ISession session,
@@ -44,7 +50,8 @@ namespace OrchardCore.SimService.SimApi
             IContentManager contentManager,
             UserManager<IUser> userManager,
             IAuthorizationService authorizationService,
-            Microsoft.Extensions.Configuration.IConfiguration config)
+            Microsoft.Extensions.Configuration.IConfiguration config,
+            IHttpClientFactory httpClientFactory)
         {
             _session = session;
             _memoryCache = memoryCache;
@@ -53,6 +60,7 @@ namespace OrchardCore.SimService.SimApi
             _userManager = userManager;
             _authorizationService = authorizationService;
             _config = config;
+            _httpClientFactory = httpClientFactory;
         }
 
         #region Buy activation number
@@ -102,7 +110,7 @@ namespace OrchardCore.SimService.SimApi
             "\nvar response = await client.ExecuteGetAsync(request);")]
         public async Task<ActionResult<BuyActionNumberDto>> BuyActionNumberAsync(string country, string operato, string product)
         {
-            var url = string.Format("https://5sim.net/v1/user/buy/activation/{0}/{1}/{2}", country, operato, product);
+            var url = string.Format("user/buy/activation/{0}/{1}/{2}", country, operato, product);
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
 
             if (user == null || !user.IsEnabled) return BadRequest();
@@ -116,79 +124,93 @@ namespace OrchardCore.SimService.SimApi
             var percent = string.IsNullOrEmpty(percentStringValue) ? 20 : int.Parse(percentStringValue);
 
             var userContent = await _session
-                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                     .With<UserProfilePartIndex>(p => p.UserId == user.Id)
                     .FirstOrDefaultAsync();
 
-            var newOrderContent = await _contentManager.NewAsync("OrderType");
-
-            if (newOrderContent != null)
+            if (userContent != null)
             {
-                // Set the current user as the owner to check for ownership permissions on creation
-                newOrderContent.Owner = User.Identity.Name;
-                newOrderContent.Author = User.Identity.Name;
-
-                if (!await _authorizationService.AuthorizeAsync(User, CommonPermissions.EditContent, newOrderContent))
-                {
-                    return Forbid();
-                }
-
-                var client = new RestClient(url);
-                var request = new RestRequest();
-                request.AddHeader("Authorization", "Bearer " + fiveSimToken);
-
-                var response = await client.ExecuteGetAsync(request);
-
-                if (response.Content == "no free phones")
-                {
-                    return Ok(response.Content);
-                }
-
-                await _contentManager.CreateAsync(newOrderContent, VersionOptions.Draft);
-
-                var resObject = JsonConvert.DeserializeObject<OrderDetailPartViewModel>(response.Content);
-
-                //Check User's Balance
-                var priceProduct = resObject.Price + (resObject.Price * percent / 100);
-
                 var content = userContent.Content;
                 var userProfilePart = content["UserProfilePart"];
                 decimal currentBalance = userProfilePart.Balance;
-                if (currentBalance <= 0 || currentBalance < priceProduct)
+
+                if (currentBalance <= 0)
                 {
-                    return Ok("You don't have enough money");
+                    return Ok(new ErrorModel { Error = "no balance" });
                 }
 
-                //Save Purchase Profile into Database
-                var newOrderDetailPart = new OrderDetailPart
+                var newOrderContent = await _contentManager.NewAsync("Orders");
+
+                if (newOrderContent != null)
                 {
-                    InventoryId = 1,//TODO: Temp
-                    OrderId = resObject.Id,
-                    Phone = resObject.Phone,
-                    Operator = resObject.Operator,
-                    Product = resObject.Product,
-                    Price = resObject.Price + (resObject.Price * percent / 100),
-                    Status = resObject.Status,
-                    Expires = resObject.Expires,
-                    Created_at = resObject.Created_at,
-                    Country = resObject.Country,
-                    Category = "activation",
-                    Email = user.Email,
-                    UserId = user.Id,
-                    UserName = user.UserName
-                };
+                    // Set the current user as the owner to check for ownership permissions on creation
+                    newOrderContent.Owner = User.Identity.Name;
+                    newOrderContent.Author = User.Identity.Name;
 
-                newOrderContent.Apply(newOrderDetailPart);
+                    if (!await _authorizationService.AuthorizeAsync(User, CommonPermissions.EditOwnContent, newOrderContent))
+                    {
+                        return Forbid();
+                    }
 
-                var result = await _contentManager.ValidateAsync(newOrderContent);
+                    using var httpClient = _httpClientFactory.CreateClient("fsim");
 
-                if (result.Succeeded)
-                {
-                    newOrderContent.Latest = true;
-                    await _contentManager.PublishAsync(newOrderContent);
+                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", fiveSimToken);
+
+                    using var response = await httpClient.GetAsync(url);
+
+                    var responseData = await response.Content.ReadAsStringAsync();
+
+                    if (responseData == "no free phones")
+                    {
+                        return Ok(response.Content);
+                    }
+
+                    await _contentManager.CreateAsync(newOrderContent, VersionOptions.Draft);
+
+                    var resObject = await response.Content.ReadFromJsonAsync<OrderDetailPartViewModel>();
+
+                    //Check User's Balance
+                    var priceProduct = resObject.Price + (resObject.Price * percent / 100);
+
+                    //var content = userContent.Content;
+                    //var userProfilePart = content["UserProfilePart"];
+                    //decimal currentBalance = userProfilePart.Balance;
+                    if (currentBalance <= 0 || currentBalance < priceProduct)
+                    {
+                        return Ok("You don't have enough money");
+                    }
+
+                    //Save Purchase Profile into Database
+                    var newOrderDetailPart = new OrderDetailPart
+                    {
+                        InventoryId = 1,//TODO: Temp
+                        OrderId = resObject.Id,
+                        Phone = resObject.Phone,
+                        Operator = resObject.Operator,
+                        Product = resObject.Product,
+                        Price = resObject.Price + (resObject.Price * percent / 100),
+                        Status = resObject.Status,
+                        Expires = resObject.Expires,
+                        Created_at = resObject.Created_at,
+                        Country = resObject.Country,
+                        Category = "activation",
+                        Email = user.Email,
+                        UserId = user.Id,
+                        UserName = user.UserName
+                    };
+
+                    newOrderContent.Apply(newOrderDetailPart);
+
+                    var result = await _contentManager.ValidateAsync(newOrderContent);
+
+                    if (result.Succeeded)
+                    {
+                        newOrderContent.Latest = true;
+                        await _contentManager.PublishAsync(newOrderContent);
+                    }
+
+                    return Ok(newOrderDetailPart);
                 }
-
-                return Ok(newOrderDetailPart);
             }
 
             return BadRequest();

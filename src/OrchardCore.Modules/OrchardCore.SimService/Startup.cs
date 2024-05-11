@@ -71,7 +71,7 @@ namespace OrchardCore.SimService
 
             services.AddHttpClient("fsim", client =>
             {
-                client.BaseAddress = new Uri("https://5sim.net/v1/guest/");
+                client.BaseAddress = new Uri("https://5sim.net/v1/");
             });
         }
 

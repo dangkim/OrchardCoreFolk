@@ -113,11 +113,11 @@ namespace OrchardCore.SimService.SimApi
             var percentStringValue = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "Percentage");
             var percent = string.IsNullOrEmpty(percentStringValue) ? 20 : int.Parse(percentStringValue);
 
-            var url = string.Format("https://5sim.net/v1/guest/products/{0}/{1}", country, sixsimoperator);
+            var url = string.Format("guest/products/{0}/{1}", country, sixsimoperator);
 
             if (!string.IsNullOrEmpty(product))
             {
-                url = string.Format("https://5sim.net/v1/guest/products/{0}/{1}/{2}", country, sixsimoperator, product);
+                url = string.Format("guest/products/{0}/{1}/{2}", country, sixsimoperator, product);
             }
 
             using var httpClient = _httpClientFactory.CreateClient("fsim");

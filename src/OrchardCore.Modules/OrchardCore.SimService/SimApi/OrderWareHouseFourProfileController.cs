@@ -111,7 +111,7 @@ namespace OrchardCore.SimService.SimApi
             var percentStringValue = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "USimPercentage");
 
             var orderContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
                 .With<OrderDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == Int64.Parse(id))
                 .FirstOrDefaultAsync();
 
@@ -155,7 +155,7 @@ namespace OrchardCore.SimService.SimApi
 
             if (resObject.Status.Equals(OrderStatusLSimEnum.SUCCESS.ToString(), StringComparison.OrdinalIgnoreCase))
             {
-                // Create List of SmsType and insert this list to OrderType
+                // Create List of SmsType and insert this list to Orders
                 foreach (var itemSms in resObject.Sms)
                 {
                     var smsContent = await _session
@@ -167,14 +167,14 @@ namespace OrchardCore.SimService.SimApi
                     {
                         //Get payment of this order
                         var paymentContent = await _session
-                        .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "PaymentType" && index.Published && index.Latest)
+                        .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Payments" && index.Published && index.Latest)
                         .With<PaymentDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == Int64.Parse(id))
                         .FirstOrDefaultAsync();
 
                         if (paymentContent == null && resObject.Sms.Count == 1)
                         {
                             var userContent = await _session
-                                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                                 .With<UserProfilePartIndex>(p => p.UserId == user.Id)
                                 .FirstOrDefaultAsync();
 
@@ -218,8 +218,8 @@ namespace OrchardCore.SimService.SimApi
 
                             var resultUserContent = await _contentManager.ValidateAsync(userContent);
 
-                            // Create new PaymentType
-                            var newPaymentContent = await _contentManager.NewAsync("PaymentType");
+                            // Create new Payments
+                            var newPaymentContent = await _contentManager.NewAsync("Payments");
                             // Set the current user as the owner to check for ownership permissions on creation
                             newPaymentContent.Owner = user.UserName;
                             newPaymentContent.Author = user.UserName;
@@ -360,7 +360,7 @@ namespace OrchardCore.SimService.SimApi
             var uSimToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "USimToken");
 
             var orderContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
                 .With<OrderDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == Int64.Parse(id))
                 .FirstOrDefaultAsync();
 
@@ -467,7 +467,7 @@ namespace OrchardCore.SimService.SimApi
             var percentStringValue = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "USimPercentage");
 
             var orderContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
                 .With<OrderDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == Int64.Parse(id))
                 .FirstOrDefaultAsync();
 
@@ -511,7 +511,7 @@ namespace OrchardCore.SimService.SimApi
 
             if (resObject.Status.Equals(OrderStatusLSimEnum.SUCCESS.ToString(), StringComparison.OrdinalIgnoreCase))
             {
-                // Create List of SmsType and insert this list to OrderType
+                // Create List of SmsType and insert this list to Orders
                 foreach (var itemSms in resObject.Sms)
                 {
                     var smsContent = await _session
@@ -523,14 +523,14 @@ namespace OrchardCore.SimService.SimApi
                     {
                         //Get payment of this order
                         var paymentContent = await _session
-                        .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "PaymentType" && index.Published && index.Latest)
+                        .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Payments" && index.Published && index.Latest)
                         .With<PaymentDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == Int64.Parse(id))
                         .FirstOrDefaultAsync();
 
                         if (paymentContent == null && resObject.Sms.Count == 1)
                         {
                             var userContent = await _session
-                                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                                 .With<UserProfilePartIndex>(p => p.UserId == user.Id)
                                 .FirstOrDefaultAsync();
 
@@ -574,8 +574,8 @@ namespace OrchardCore.SimService.SimApi
 
                             var resultUserContent = await _contentManager.ValidateAsync(userContent);
 
-                            // Create new PaymentType
-                            var newPaymentContent = await _contentManager.NewAsync("PaymentType");
+                            // Create new Payments
+                            var newPaymentContent = await _contentManager.NewAsync("Payments");
                             // Set the current user as the owner to check for ownership permissions on creation
                             newPaymentContent.Owner = user.UserName;
                             newPaymentContent.Author = user.UserName;
@@ -719,7 +719,7 @@ namespace OrchardCore.SimService.SimApi
             var uSimToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "USimToken");
 
             var orderContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "OrderType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
                 .With<OrderDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == Int64.Parse(id))
                 .FirstOrDefaultAsync();
 

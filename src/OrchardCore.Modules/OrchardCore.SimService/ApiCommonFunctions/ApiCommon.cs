@@ -67,7 +67,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
             {
                 // Get UserProfile by userId
                 var userContent = await session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserName == user.UserName)
                 .FirstOrDefaultAsync();
 
@@ -108,8 +108,8 @@ namespace OrchardCore.SimService.ApiCommonFunctions
 
                     var result = await _contentManager.ValidateAsync(userContent);
 
-                    // Create new PaymentType
-                    var newPaymentContent = await _contentManager.NewAsync("PaymentType");
+                    // Create new Payments
+                    var newPaymentContent = await _contentManager.NewAsync("Payments");
                     // Set the current user as the owner to check for ownership permissions on creation
                     newPaymentContent.Owner = user.UserName;
                     newPaymentContent.Author = user.UserName;
@@ -163,7 +163,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
             {
                 // Get UserProfile by userId
                 var userContent = await session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserId == updateBalanceModel.UserId)
                 .FirstOrDefaultAsync();
 
@@ -204,8 +204,8 @@ namespace OrchardCore.SimService.ApiCommonFunctions
 
                     var result = await _contentManager.ValidateAsync(userContent);
 
-                    // Create new PaymentType
-                    var newPaymentContent = await _contentManager.NewAsync("PaymentType");
+                    // Create new Payments
+                    var newPaymentContent = await _contentManager.NewAsync("Payments");
                     // Set the current user as the owner to check for ownership permissions on creation
                     newPaymentContent.Owner = user.UserName;
                     newPaymentContent.Author = user.UserName;

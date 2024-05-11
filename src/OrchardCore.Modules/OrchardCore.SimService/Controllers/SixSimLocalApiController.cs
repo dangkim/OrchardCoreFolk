@@ -138,7 +138,7 @@ namespace OrchardCore.SimService.Controllers
         {
             // check user Id by payment Id from PM
             var userContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserId == model.PAYMENT_ID)
                 .FirstOrDefaultAsync();
 
@@ -163,7 +163,7 @@ namespace OrchardCore.SimService.Controllers
         {
             // check user Id by payment Id from PM
             var userContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserId == model.PAYMENT_ID)
                 .FirstOrDefaultAsync();
 
@@ -232,7 +232,7 @@ namespace OrchardCore.SimService.Controllers
         public async Task<IActionResult> SearchUserById(int userId)
         {
             var userContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserId == userId)
                 .FirstOrDefaultAsync();
 
@@ -264,7 +264,7 @@ namespace OrchardCore.SimService.Controllers
         public async Task<IActionResult> SearchUserByEmail(string email)
         {
             var userContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.Email == email)
                 .FirstOrDefaultAsync();
 
@@ -309,7 +309,7 @@ namespace OrchardCore.SimService.Controllers
             var token = GenerateJSONWebToken(user.UserName, user.Email);
 
             var userContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserName == User.Identity.Name)
                 .FirstOrDefaultAsync();
 
@@ -468,7 +468,7 @@ namespace OrchardCore.SimService.Controllers
             {
                 // Get UserProfile by userId
                 var userContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserId == userId)
                 .FirstOrDefaultAsync();
 
@@ -476,15 +476,20 @@ namespace OrchardCore.SimService.Controllers
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "ExchangeRate" && index.DisplayText == "VND" && index.Published && index.Latest)
                 .FirstOrDefaultAsync();
 
-                string vndRateString = exchangeRateVNDContent.Content["ExchangeRate"]["RateToUsd"]["Text"];
-                decimal vndRateDouble = Decimal.Parse(vndRateString);
+                var rateVNDElement = exchangeRateVNDContent.Get<ExchangeRateElement>("ExchangeRate");
+
+                var vndRateString = rateVNDElement.RateToUsd.Text;
+                var vndRateDouble = decimal.Parse(vndRateString);
 
                 var exchangeRateRUBContent = await _session
                     .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "ExchangeRate" && index.DisplayText == "RUB" && index.Published && index.Latest)
                     .FirstOrDefaultAsync();
 
-                string rubRateString = exchangeRateRUBContent.Content["ExchangeRate"]["RateToUsd"]["Text"];
-                decimal rubRateDouble = Decimal.Parse(rubRateString);
+                var rateRUBElement = exchangeRateRUBContent.Get<ExchangeRateElement>("ExchangeRate");
+
+                var rubRateString = rateRUBElement.RateToUsd.Text;
+
+                var rubRateDouble = decimal.Parse(rubRateString);
 
                 if (userContent != null)
                 {
@@ -492,9 +497,9 @@ namespace OrchardCore.SimService.Controllers
 
                     var amountInRub = amountInUsd / rubRateDouble;
 
-                    var content = userContent.Content;
-                    var userProfilePart = content["UserProfilePart"];
-                    decimal currentBalance = userProfilePart.Balance;
+                    //var content = userContent.Content;
+                    var userProfilePart = userContent.As<UserProfilePart>();
+                    var currentBalance = userProfilePart.Balance;
 
                     currentBalance += amountInRub; // All is RUB currency
 
@@ -523,8 +528,8 @@ namespace OrchardCore.SimService.Controllers
                     userContent.Owner = userProfilePart.UserName;
                     userContent.Author = userProfilePart.UserName;
 
-                    // Create new PaymentType
-                    var newPaymentContent = await _contentManager.NewAsync("PaymentType");
+                    // Create new Payments
+                    var newPaymentContent = await _contentManager.NewAsync("Payments");
                     // Set the current user as the owner to check for ownership permissions on creation
                     newPaymentContent.Owner = userProfilePart.UserName;
 
@@ -578,7 +583,7 @@ namespace OrchardCore.SimService.Controllers
             {
                 // Get UserProfile by userId
                 var userContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserId == userId)
                 .FirstOrDefaultAsync();
 
@@ -624,8 +629,8 @@ namespace OrchardCore.SimService.Controllers
                     userContent.Owner = userProfilePart.UserName;
                     userContent.Author = userProfilePart.UserName;
 
-                    // Create new PaymentType
-                    var newPaymentContent = await _contentManager.NewAsync("PaymentType");
+                    // Create new Payments
+                    var newPaymentContent = await _contentManager.NewAsync("Payments");
                     // Set the current user as the owner to check for ownership permissions on creation
                     newPaymentContent.Owner = userProfilePart.UserName;
 

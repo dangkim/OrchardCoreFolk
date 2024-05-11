@@ -116,11 +116,11 @@ namespace OrchardCore.SimService.SimApi
 
             //var fiveSimToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
             var userContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserId == user.Id)
                 .FirstOrDefaultAsync();
 
-            var newOrderContent = await _contentManager.NewAsync("OrderType");
+            var newOrderContent = await _contentManager.NewAsync("Orders");
 
             if (newOrderContent != null)
             {
@@ -252,13 +252,13 @@ namespace OrchardCore.SimService.SimApi
             }
 
             var userContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserId == user.Id)
                 .FirstOrDefaultAsync();
 
             //var fiveSimToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
 
-            var newOrderContent = await _contentManager.NewAsync("OrderType");
+            var newOrderContent = await _contentManager.NewAsync("Orders");
 
             if (newOrderContent != null)
             {

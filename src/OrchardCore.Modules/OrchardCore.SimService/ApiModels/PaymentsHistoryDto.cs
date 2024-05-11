@@ -14,7 +14,7 @@ namespace OrchardCore.SimService.ApiModels
         public DateTime CreatedAt { get; set; }
     }
 
-    public class PaymentType
+    public class Payments
     {
         public string Name { get; set; }
     }
@@ -27,7 +27,7 @@ namespace OrchardCore.SimService.ApiModels
     public class PaymentsHistoryDto
     {
         public List<Object> Data { get; set; }
-        public List<PaymentType> PaymentTypes { get; set; }
+        public List<Payments> PaymentTypes { get; set; }
         public List<PaymentProvider> PaymentProviders { get; set; }
         public decimal Total { get; set; }
     }

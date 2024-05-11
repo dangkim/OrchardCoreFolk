@@ -121,7 +121,7 @@ namespace OrchardCore.SimService.SimApi
             }
 
             var userContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserId == user.Id)
                 .FirstOrDefaultAsync();
 
@@ -134,7 +134,7 @@ namespace OrchardCore.SimService.SimApi
                 return Ok("You don't have enough money");
             }
 
-            var newOrderContent = await _contentManager.NewAsync("OrderType");
+            var newOrderContent = await _contentManager.NewAsync("Orders");
 
             if (newOrderContent != null)
             {
@@ -272,7 +272,7 @@ namespace OrchardCore.SimService.SimApi
             }
 
             var userContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserId == user.Id)
                 .FirstOrDefaultAsync();
 
@@ -285,7 +285,7 @@ namespace OrchardCore.SimService.SimApi
                 return Ok("You don't have enough money");
             }
 
-            var newOrderContent = await _contentManager.NewAsync("OrderType");
+            var newOrderContent = await _contentManager.NewAsync("Orders");
 
             if (newOrderContent != null)
             {

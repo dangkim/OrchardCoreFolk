@@ -172,7 +172,7 @@ namespace OrchardCore.SimService.Services
             {
                 // Get UserProfile by userId
                 var userContent = await session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfileType" && index.Published && index.Latest)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserId == userId) // TODO: temporarily uncheck gmailMsgId,  Should check gmailMsgId
                 .FirstOrDefaultAsync();
 
@@ -212,8 +212,8 @@ namespace OrchardCore.SimService.Services
                     newUserContent.Owner = userProfilePart.UserName;
                     newUserContent.Author = userProfilePart.UserName;
 
-                    // Create new PaymentType
-                    var newPaymentContent = await _contentManager.NewAsync("PaymentType");
+                    // Create new Payments
+                    var newPaymentContent = await _contentManager.NewAsync("Payments");
                     // Set the current user as the owner to check for ownership permissions on creation
                     newPaymentContent.Owner = userProfilePart.UserName;
                     newPaymentContent.Author = userProfilePart.UserName;

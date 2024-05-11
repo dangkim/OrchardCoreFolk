@@ -112,7 +112,7 @@ namespace OrchardCore.SimService.SimApi
             }
 
             var paymentTypes = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "PaymentType" && index.Published)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Payments" && index.Published)
                 .With<PaymentDetailPartIndex>(p => p.UserId == user.Id)
                 .OrderBy(x => x.Id)
                 .Take(limit).Skip(offset).ListAsync();
@@ -122,7 +122,7 @@ namespace OrchardCore.SimService.SimApi
             if (reverse)
             {
                 paymentTypes = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "PaymentType" && index.Published)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Payments" && index.Published)
                 .With<PaymentDetailPartIndex>(p => p.UserId == user.Id)
                 .OrderByDescending(x => x.Id)
                 .Take(limit).Skip(offset).ListAsync();
@@ -130,7 +130,7 @@ namespace OrchardCore.SimService.SimApi
             else if (order.Equals("balance", StringComparison.OrdinalIgnoreCase))
             {
                 paymentTypes = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "PaymentType" && index.Published)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Payments" && index.Published)
                 .With<PaymentDetailPartIndex>(p => p.UserId == user.Id)
                 .OrderByDescending(x => x.Balance)
                 .Take(limit).Skip(offset).ListAsync();
@@ -138,7 +138,7 @@ namespace OrchardCore.SimService.SimApi
             else if (order.Equals("amount", StringComparison.OrdinalIgnoreCase))
             {
                 paymentTypes = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "PaymentType" && index.Published)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Payments" && index.Published)
                 .With<PaymentDetailPartIndex>(p => p.UserId == user.Id)
                 .OrderByDescending(x => x.Amount)
                 .Take(limit).Skip(offset).ListAsync();
@@ -146,7 +146,7 @@ namespace OrchardCore.SimService.SimApi
             else if (order.Equals("created_at", StringComparison.OrdinalIgnoreCase))
             {
                 paymentTypes = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "PaymentType" && index.Published)
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Payments" && index.Published)
                 .With<PaymentDetailPartIndex>(p => p.UserId == user.Id)
                 .OrderByDescending(x => x.CreatedAt)
                 .Take(limit).Skip(offset).ListAsync();

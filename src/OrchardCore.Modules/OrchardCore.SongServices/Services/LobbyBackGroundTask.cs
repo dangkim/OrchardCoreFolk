@@ -10,7 +10,7 @@ using OrchardCore.SongServices.Models;
 
 namespace OrchardCore.SongServices.Services;
 
-[BackgroundTask(Schedule = "* * * * * /20", Description = "lobby", IsIncludedSeconds = true)]
+[BackgroundTask(Schedule = "* * * 20 * *", Description = "lobby", IsIncludedSeconds = true)]
 public class LobbyBackGroundTask : IBackgroundTask
 {
     private readonly ILogger _logger;

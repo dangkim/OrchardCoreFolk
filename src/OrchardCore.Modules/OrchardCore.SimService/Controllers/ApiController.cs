@@ -620,7 +620,7 @@ namespace OrchardCore.SimService.Controllers
                             var key = Guid.NewGuid().ToByteArray();
                             var token = Convert.ToBase64String(time.Concat(key).ToArray());
 
-                            // Create UserProfileType/Part
+                            // Create UserProfile/Part
                             var newContentItem = await _contentManager.NewAsync("UserProfile");
 
                             newContentItem.Owner = user.UserName;
