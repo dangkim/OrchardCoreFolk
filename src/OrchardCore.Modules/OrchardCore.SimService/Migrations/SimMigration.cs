@@ -239,4 +239,18 @@ public class SimMigration : DataMigration
 
         return 1;
     }
+
+    public async Task<int> UpdateFrom1Async()
+    {
+        await SchemaBuilder.AlterTableAsync(nameof(OrderDetailPartIndex), table => table
+                        .AddColumn<int>(nameof(OrderDetailPartIndex.InventoryId)));
+
+        await SchemaBuilder.AlterTableAsync(nameof(OrderDetailPartIndex), table => table
+                .CreateIndex(
+                    $"IDX_{nameof(OrderDetailPartIndex)}_{nameof(OrderDetailPartIndex.InventoryId)}",
+                    nameof(OrderDetailPartIndex.InventoryId))
+        );
+
+        return 2;
+    }
 }

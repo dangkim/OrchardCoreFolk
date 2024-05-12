@@ -590,25 +590,18 @@ namespace OrchardCore.SimService.ApiCommonFunctions
             }
         }
 
-        public static async Task<OrderDetailPartViewModel> CheckOrderAsync(string simToken, string orderId, int inventory = (int)InventoryEnum.FSim)
+        public static async Task<OrderDetailPartViewModel> CheckOrderAsync(string simToken, string orderId)
         {
-            if (inventory == (int)InventoryEnum.FSim)
-            {
-                var url = string.Format("https://5sim.net/v1/user/check/{0}", orderId);
+            var url = string.Format("https://5sim.net/v1/user/check/{0}", orderId);
 
-                var client = new RestClient(url);
-                var request = new RestRequest();
-                request.AddHeader("Authorization", "Bearer " + simToken);
+            var client = new RestClient(url);
+            var request = new RestRequest();
+            request.AddHeader("Authorization", "Bearer " + simToken);
 
-                var response = await client.ExecuteGetAsync(request);
-                var resObject = JsonConvert.DeserializeObject<OrderDetailPartViewModel>(response.Content);
+            var response = await client.ExecuteGetAsync(request);
+            var resObject = JsonConvert.DeserializeObject<OrderDetailPartViewModel>(response.Content);
 
-                return resObject;
-            }
-            else
-            {
-                return new OrderDetailPartViewModel();
-            }
+            return resObject;
         }
 
         public static async Task<OrderDetailPartViewModel> CheckOrderWareHouseTwoAsync(string simToken, string orderId, int inventory = (int)InventoryEnum.LSim)

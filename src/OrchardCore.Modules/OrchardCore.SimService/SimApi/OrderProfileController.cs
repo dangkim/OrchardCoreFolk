@@ -21,10 +21,13 @@ using OrchardCore.Users;
 using RestSharp;
 using YesSql;
 using OrchardCore.SimService.Permissions;
+using System.Collections.Generic;
+using Dapper;
+using System.Linq;
 
 namespace OrchardCore.SimService.SimApi
 {
-    [Route("api/content/[action]/{id}")]
+    [Route("api/content/[action]/{id?}/{product?}/{country?}")]
     [ApiController]
     [Authorize(AuthenticationSchemes = "Api"), IgnoreAntiforgeryToken, AllowAnonymous]
     [OpenApiTag("Order management", Description = "Get information of order.")]
@@ -99,7 +102,7 @@ namespace OrchardCore.SimService.SimApi
             "\nrequest.AddHeader(\"Authorization\", \"Bearer \" + token);" +
             "\nrequest.AddHeader(\"Accept\", \"application/json\");" +
             "\nvar response = await client.ExecuteGetAsync(request);")]
-        public async Task<ActionResult<CheckOrderDto>> CheckOrderAsync(string id, int inventory = (int)InventoryEnum.FSim)
+        public async Task<ActionResult<CheckOrderDto>> CheckOrderAsync(string id)
         {
             // check orderId from 5sim with OrderDetailPart
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
@@ -116,7 +119,7 @@ namespace OrchardCore.SimService.SimApi
 
             var orderContent = await _session
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
-                .With<OrderDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == Int64.Parse(id))
+                .With<OrderDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == long.Parse(id))
                 .FirstOrDefaultAsync();
 
             if (orderContent == null) return BadRequest();
@@ -125,7 +128,7 @@ namespace OrchardCore.SimService.SimApi
 
             if (orderDetailPart == null) return BadRequest();
 
-            var resObject = await ApiCommon.CheckOrderAsync(simToken, id, inventory);
+            var resObject = await ApiCommon.CheckOrderAsync(simToken, id);
 
             if (!orderDetailPart.Status.ToString().ToLower().Equals(resObject.Status, StringComparison.CurrentCultureIgnoreCase))
             {
@@ -678,6 +681,41 @@ namespace OrchardCore.SimService.SimApi
             var response = await client.ExecuteGetAsync(request);
             var resObject = JsonConvert.DeserializeObject<SmsInboxListDto>(response.Content);
             return Ok(resObject);
+        }
+        #endregion
+
+        #region getOrderByProductAndCountry
+
+        [HttpGet]
+        [ActionName("orderstableproductcountry")]
+        public async Task<ActionResult<List<CheckOrderDto>>> GetOrderByProductAndCountryAsync(string id, string product, string country)
+        {
+            // check orderId from 5sim with OrderDetailPart
+            var user = await _userManager.GetUserAsync(User) as Users.Models.User;
+            if (user == null || !user.IsEnabled) return BadRequest();
+
+            if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
+            {
+                return this.ChallengeOrForbid();
+            }
+
+            var simToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
+            var percentStringValue = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "Percentage");
+            var percent = string.IsNullOrEmpty(percentStringValue) ? 20 : int.Parse(percentStringValue);
+
+            var orderContent = await _session
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
+                .With<OrderDetailPartIndex>(p => p.UserId == user.Id
+                                            && p.Product == product
+                                            && p.Country == country)
+                .OrderByDescending(o => o.OrderId)
+                .Take(3).ListAsync();
+
+            if (orderContent == null) return BadRequest();
+
+            var orderDetailParts = orderContent.Select(ord => ord.As<OrderDetailPart>()).ToList();
+
+            return Ok(orderDetailParts);
         }
         #endregion
 
