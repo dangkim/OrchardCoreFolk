@@ -209,7 +209,20 @@ namespace OrchardCore.SimService.SimApi
                         await _contentManager.PublishAsync(newOrderContent);
                     }
 
-                    return Ok(newOrderDetailPart);
+                    return Ok(new
+                    {
+                        newOrderDetailPart.InventoryId,
+                        newOrderDetailPart.OrderId,
+                        newOrderDetailPart.Phone,
+                        newOrderDetailPart.Operator,
+                        newOrderDetailPart.Product,
+                        newOrderDetailPart.Price,
+                        newOrderDetailPart.Status,
+                        newOrderDetailPart.Expires,
+                        newOrderDetailPart.Created_at,
+                        newOrderDetailPart.Country,
+                        newOrderDetailPart.Category
+                    });
                 }
             }
 

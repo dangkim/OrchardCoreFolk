@@ -24,6 +24,7 @@ using OrchardCore.SimService.Permissions;
 using System.Collections.Generic;
 using Dapper;
 using System.Linq;
+using YesSql.Services;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -715,7 +716,24 @@ namespace OrchardCore.SimService.SimApi
 
             var orderDetailParts = orderContent.Select(ord => ord.As<OrderDetailPart>()).ToList();
 
-            return Ok(orderDetailParts);
+            var ordersReturn = orderDetailParts.Select(ord =>
+                                                        new
+                                                        {
+                                                            ord.InventoryId,
+                                                            ord.OrderId,
+                                                            ord.Phone,
+                                                            ord.Operator,
+                                                            ord.Product,
+                                                            ord.Price,
+                                                            ord.Status,
+                                                            ord.Expires,
+                                                            ord.Created_at,
+                                                            ord.Country,
+                                                            ord.Category
+                                                        }
+                                                    ).ToList();
+
+            return Ok(ordersReturn);
         }
         #endregion
 
