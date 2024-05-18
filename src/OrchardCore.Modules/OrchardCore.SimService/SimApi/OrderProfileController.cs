@@ -26,6 +26,7 @@ using Dapper;
 using System.Linq;
 using YesSql.Services;
 using OrchardCore.Lists.Models;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -134,33 +135,50 @@ namespace OrchardCore.SimService.SimApi
 
             if (!orderDetailPart.Status.Equals(resObject.Status, StringComparison.OrdinalIgnoreCase))
             {
-                var newOrderDetailPart = new OrderDetailPart
-                {
-                    InventoryId = orderDetailPart.InventoryId,
-                    OrderId = orderDetailPart.OrderId,
-                    Phone = orderDetailPart.Phone,
-                    Operator = orderDetailPart.Operator,
-                    Product = orderDetailPart.Product,
-                    Price = orderDetailPart.Price,
-                    Status = resObject.Status.ToLower(),
-                    Expires = orderDetailPart.Expires,
-                    Created_at = orderDetailPart.Created_at,
-                    Country = orderDetailPart.Country,
-                    Category = orderDetailPart.Category,
-                    Email = orderDetailPart.Email,
-                    UserId = orderDetailPart.UserId,
-                    UserName = orderDetailPart.UserName
-                };
+                //var newOrderDetailPart = new OrderDetailPart
+                //{
+                //    InventoryId = orderDetailPart.InventoryId,
+                //    OrderId = orderDetailPart.OrderId,
+                //    Phone = orderDetailPart.Phone,
+                //    Operator = orderDetailPart.Operator,
+                //    Product = orderDetailPart.Product,
+                //    Price = orderDetailPart.Price,
+                //    Status = resObject.Status.ToLower(),
+                //    Expires = orderDetailPart.Expires,
+                //    Created_at = orderDetailPart.Created_at,
+                //    Country = orderDetailPart.Country,
+                //    Category = orderDetailPart.Category,
+                //    Email = orderDetailPart.Email,
+                //    UserId = orderDetailPart.UserId,
+                //    UserName = orderDetailPart.UserName
+                //};
 
-                orderContent.Apply(newOrderDetailPart);
+                orderDetailPart.Status = resObject.Status.ToLower();
+
+                //orderContent.Apply(newOrderDetailPart);
+
+                await _contentManager.UpdateAsync(orderContent);
 
                 var resultOrder = await _contentManager.ValidateAsync(orderContent);
 
                 if (resultOrder.Succeeded)
                 {
-                    await _contentManager.UpdateAsync(orderContent);
+                    await _contentManager.PublishAsync(orderContent);
                 }
             }
+
+            // Temp
+            var sms = new SmsPartViewModel()
+            {
+                Code = "404943",
+                Created_at = DateTime.Now,
+                Date = DateTime.Now,
+                Sender = "Google",
+                Text = "G-404943 is your Google verification code."
+            };
+
+            resObject.Sms.Add(sms);
+            resObject.Status = "pending";
 
             if (resObject.Sms.Count > 0)
             {
