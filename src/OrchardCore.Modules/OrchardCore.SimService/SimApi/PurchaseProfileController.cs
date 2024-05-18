@@ -172,9 +172,6 @@ namespace OrchardCore.SimService.SimApi
                     //Check User's Balance
                     var priceProduct = resObject.Price + (resObject.Price * percent / 100);
 
-                    //var content = userContent.Content;
-                    //var userProfilePart = content["UserProfilePart"];
-                    //decimal currentBalance = userProfilePart.Balance;
                     if (currentBalance <= 0 || currentBalance < priceProduct)
                     {
                         return Ok("You don't have enough money");
@@ -189,7 +186,7 @@ namespace OrchardCore.SimService.SimApi
                         Operator = resObject.Operator,
                         Product = resObject.Product,
                         Price = resObject.Price + (resObject.Price * percent / 100),
-                        Status = resObject.Status,
+                        Status = resObject.Status.ToLower(),
                         Expires = resObject.Expires,
                         Created_at = resObject.Created_at,
                         Country = resObject.Country,

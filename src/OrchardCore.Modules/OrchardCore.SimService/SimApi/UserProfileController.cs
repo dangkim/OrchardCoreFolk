@@ -22,6 +22,9 @@ using CommonPermissions = OrchardCore.Contents.CommonPermissions;
 using OrchardCore.Users;
 using YesSql;
 using OrchardCore.SimService.Permissions;
+using System.Linq.Expressions;
+using System.Linq;
+using YesSql.Services;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -233,7 +236,7 @@ namespace OrchardCore.SimService.SimApi
         public async Task<ActionResult<OrdersHistoryDto>> OrdersRequestAsync(string category, string date, int limit, int offset, string order, string phone, bool reverse, string status)
         {
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
-            //var categoryLower = category.ToLower();
+
             if (user == null || !user.IsEnabled) return BadRequest();
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {
@@ -242,7 +245,7 @@ namespace OrchardCore.SimService.SimApi
 
             IEnumerable<ContentItem> orderTypes = null;
 
-            orderTypes = await FilterOrder(user.Id, category, date, limit, offset, order, phone, reverse, status);
+            orderTypes = await FilterOrderHistory(user.Id, category, date, limit, offset, order, phone, reverse, status);
 
             if (orderTypes == null)
             {
@@ -251,48 +254,10 @@ namespace OrchardCore.SimService.SimApi
 
             var data = new List<object>();
 
-            var total = await _session
-                   .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published)
-                   .With<OrderDetailPartIndex>(p => p.UserId == user.Id).CountAsync();
-
-            var totalSearch = 0;
-
-            if (!string.IsNullOrEmpty(status) || !string.IsNullOrEmpty(phone) || !string.IsNullOrEmpty(date))
+            foreach (var itemType in orderTypes)
             {
-                totalSearch = await TotalFilterOrder(user.Id, date, phone, status);
-                //total = totalSearch;
-            }
+                var item = itemType.As<OrderDetailPart>();
 
-            if (totalSearch > 0)
-            {
-                total = totalSearch;
-            }
-
-            var dataOrder = new List<OrderDetailPart>();
-
-            foreach (var item in orderTypes)
-            {
-                var orderDetailPart = item.Content["OrderDetailPart"];
-                var orderDetailPartObject = new OrderDetailPart()
-                {
-                    Country = orderDetailPart.Country,
-                    Category = orderDetailPart.Category,
-                    Created_at = orderDetailPart.Created_at,
-                    Expires = orderDetailPart.Expires,
-                    InventoryId = orderDetailPart.InventoryId == null ? 1 : orderDetailPart.InventoryId,
-                    OrderId = orderDetailPart.OrderId,
-                    Operator = orderDetailPart.Operator,
-                    Phone = orderDetailPart.Phone,
-                    Price = orderDetailPart.Price,
-                    Product = orderDetailPart.Product,
-                    Status = orderDetailPart.Status,
-                };
-
-                dataOrder.Add(orderDetailPartObject);
-            }
-
-            foreach (var item in dataOrder)
-            {
                 var listSms = new List<object>();
                 // Get containedItem: smsPart
                 var smsContent = await _session
@@ -302,18 +267,18 @@ namespace OrchardCore.SimService.SimApi
 
                 var statusLocal = item.Status;
 
-                if ((item.Status == "RECEIVED" || item.Status == "PENDING") && item.Expires > DateTime.UtcNow)
+                if ((item.Status == "received" || item.Status == "pending") && item.Expires > DateTime.UtcNow)
                 {
                     statusLocal = item.Status;
                 }
-                else if ((item.Status == "RECEIVED" || item.Status == "PENDING") && item.Expires <= DateTime.UtcNow)
+                else if ((item.Status == "received" || item.Status == "pending") && item.Expires <= DateTime.UtcNow)
                 {
-                    statusLocal = "TIMEOUT";
+                    statusLocal = "timeout";
                 }
 
                 foreach (var sms in smsContent)
                 {
-                    var smsPart = sms.Content["SmsPart"];
+                    var smsPart = sms.As<SmsPart>();
                     if (smsPart != null)
                     {
                         var smsObject = new
@@ -329,7 +294,7 @@ namespace OrchardCore.SimService.SimApi
                     }
                 }
 
-                var prderDetailPartObject = new
+                var orderDetailPartObject = new
                 {
                     item.Country,
                     item.Category,
@@ -345,13 +310,13 @@ namespace OrchardCore.SimService.SimApi
                     sms = listSms,
                 };
 
-                data.Add(prderDetailPartObject);
+                data.Add(orderDetailPartObject);
             }
 
             var returnedResult = new
             {
                 data,
-                total
+                total = data.Count
             };
 
             return Ok(returnedResult);
@@ -513,6 +478,47 @@ namespace OrchardCore.SimService.SimApi
                 var sortedOrderTypes = await orderTypes.OrderByDescending(p => p.Id).Take(limit).Skip(offset).ListAsync();
                 return sortedOrderTypes;
             }
+        }
+
+        private async Task<IEnumerable<ContentItem>> FilterOrderHistory(long userId, string category, string date, int limit, int offset, string order, string phone, bool reverse, string status)
+        {
+            var normalizedStatus = status?.ToLower() ?? "";
+
+            var orderTypes = _session
+                   .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published)
+                   .With<OrderDetailPartIndex>(p => p.UserId == userId)
+                   .With<OrderDetailPartIndex>(p => p.Phone.Contains(phone ?? ""))
+                   .With<OrderDetailPartIndex>(p => p.Category.Contains(category ?? ""))
+                   .With<OrderDetailPartIndex>(p => p.Status.Contains(normalizedStatus ?? ""));
+
+
+            if (!string.IsNullOrEmpty(date))
+            {
+                var parsedDate = DateTime.ParseExact(date, "dd-MM-yy", CultureInfo.InvariantCulture);
+                orderTypes = orderTypes
+                   .With<OrderDetailPartIndex>(p => p.Created_at >= parsedDate && p.Created_at <= parsedDate.AddDays(1));
+            }
+
+            var sortOptions = new Dictionary<string, Expression<Func<OrderDetailPartIndex, object>>>
+                                        {
+                                            { "id", p => p.Id },
+                                            { "product_name", p => p.Product },
+                                            { "created_at", p => p.Created_at },
+                                            { "country", p => p.Country },
+                                            { "phone_phone", p => p.Phone },
+                                            { "status", p => p.Status }
+                                        };
+
+            // Default sort option
+            var sortExpression = sortOptions.ContainsKey(order.ToLower()) ? sortOptions[order.ToLower()] : sortOptions["id"];
+
+            // Apply sorting
+            var sortedOrderTypes = reverse ? await orderTypes.OrderByDescending(sortExpression).ListAsync() : await orderTypes.OrderBy(sortExpression).ListAsync();
+
+            // Apply pagination
+            sortedOrderTypes = sortedOrderTypes.Skip(offset).Take(limit);
+
+            return sortedOrderTypes;
         }
 
         private async Task<int> TotalFilterOrder(long userId, string date, string phone, string status)

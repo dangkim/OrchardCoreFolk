@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using Dapper;
 using System.Linq;
 using YesSql.Services;
+using OrchardCore.Lists.Models;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -125,13 +126,13 @@ namespace OrchardCore.SimService.SimApi
 
             if (orderContent == null) return BadRequest();
 
-            var orderDetailPart = orderContent.Content["OrderDetailPart"];
+            var orderDetailPart = orderContent.As<OrderDetailPart>();
 
             if (orderDetailPart == null) return BadRequest();
 
             var resObject = await ApiCommon.CheckOrderAsync(simToken, id);
 
-            if (!orderDetailPart.Status.ToString().ToLower().Equals(resObject.Status, StringComparison.CurrentCultureIgnoreCase))
+            if (!orderDetailPart.Status.Equals(resObject.Status, StringComparison.OrdinalIgnoreCase))
             {
                 var newOrderDetailPart = new OrderDetailPart
                 {
@@ -141,7 +142,7 @@ namespace OrchardCore.SimService.SimApi
                     Operator = orderDetailPart.Operator,
                     Product = orderDetailPart.Product,
                     Price = orderDetailPart.Price,
-                    Status = resObject.Status,
+                    Status = resObject.Status.ToLower(),
                     Expires = orderDetailPart.Expires,
                     Created_at = orderDetailPart.Created_at,
                     Country = orderDetailPart.Country,
@@ -190,12 +191,12 @@ namespace OrchardCore.SimService.SimApi
 
                                 if (userContent == null) return BadRequest();
 
-                                var userProfilePart = userContent.Content["UserProfilePart"];
+                                var userProfilePart = userContent.As<UserProfilePart>();
 
                                 if (userProfilePart == null) return Forbid();
 
-                                decimal currentBalance = userProfilePart.Balance;
-                                decimal frozenBalance = resObject.Price + (resObject.Price * percent / 100);
+                                var currentBalance = userProfilePart.Balance;
+                                var frozenBalance = resObject.Price + (resObject.Price * percent / 100);
 
                                 currentBalance -= (resObject.Price + (resObject.Price * percent / 100)); // All is RUB currency
 
@@ -290,9 +291,15 @@ namespace OrchardCore.SimService.SimApi
 
                                 if (resultSms.Succeeded)
                                 {
-                                    var smsContainedPart = new { ListContentItemId = orderContent.ContentItemId, Order = 0 };
-                                    var smsObjContainedPart = JObject.FromObject(smsContainedPart);
-                                    newSmsContentItem.Content["ContainedPart"] = smsObjContainedPart;
+                                    //var smsContainedPart = new { ListContentItemId = orderContent.ContentItemId, Order = 0 };
+                                    //var smsObjContainedPart = JObject.FromObject(smsContainedPart);
+                                    newSmsContentItem.Alter<ContainedPart>(part =>
+                                    {
+                                        part.ListContentItemId = orderContent.ContentItemId;
+                                        part.Order = 0;
+                                    });
+
+                                    //.Content["ContainedPart"] = smsObjContainedPart;
                                     await _contentManager.PublishAsync(newSmsContentItem);
                                 }
                             }
@@ -688,8 +695,57 @@ namespace OrchardCore.SimService.SimApi
         #region getOrderByProductAndCountry
 
         [HttpGet]
-        [ActionName("orderstableproductcountry")]
-        public async Task<ActionResult<List<CheckOrderDto>>> GetOrderByProductAndCountryAsync(string id, string product, string country)
+        [ActionName("stableorderproductcountry")]
+        public async Task<ActionResult<List<CheckOrderDto>>> GetStableOrderByProductAndCountryAsync(string id, string product, string country)
+        {
+            // check orderId from 5sim with OrderDetailPart
+            var user = await _userManager.GetUserAsync(User) as Users.Models.User;
+            if (user == null || !user.IsEnabled) return BadRequest();
+
+            if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
+            {
+                return this.ChallengeOrForbid();
+            }
+
+            var simToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
+            var percentStringValue = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "Percentage");
+            var percent = string.IsNullOrEmpty(percentStringValue) ? 20 : int.Parse(percentStringValue);
+
+            var orderContent = await _session
+                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
+                .With<OrderDetailPartIndex>(p => p.UserId == user.Id
+                                            && p.Product == product
+                                            && p.Country == country)
+                .OrderByDescending(o => o.OrderId)
+                .Take(3).ListAsync();
+
+            if (orderContent == null) return BadRequest();
+
+            var orderDetailParts = orderContent.Select(ord => ord.As<OrderDetailPart>()).ToList();
+
+            var ordersReturn = orderDetailParts.Select(ord =>
+                                                        new
+                                                        {
+                                                            ord.InventoryId,
+                                                            ord.OrderId,
+                                                            ord.Phone,
+                                                            ord.Operator,
+                                                            ord.Product,
+                                                            ord.Price,
+                                                            ord.Status,
+                                                            ord.Expires,
+                                                            ord.Created_at,
+                                                            ord.Country,
+                                                            ord.Category
+                                                        }
+                                                    ).ToList();
+
+            return Ok(ordersReturn);
+        }
+
+        [HttpGet]
+        [ActionName("stableordershistory")]
+        public async Task<ActionResult<List<CheckOrderDto>>> GetStableOrderHistoryAsync(string id, string product, string country)
         {
             // check orderId from 5sim with OrderDetailPart
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
