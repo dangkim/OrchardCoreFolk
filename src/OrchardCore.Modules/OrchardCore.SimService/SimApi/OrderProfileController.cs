@@ -135,27 +135,8 @@ namespace OrchardCore.SimService.SimApi
 
             if (!orderDetailPart.Status.Equals(resObject.Status, StringComparison.OrdinalIgnoreCase))
             {
-                //var newOrderDetailPart = new OrderDetailPart
-                //{
-                //    InventoryId = orderDetailPart.InventoryId,
-                //    OrderId = orderDetailPart.OrderId,
-                //    Phone = orderDetailPart.Phone,
-                //    Operator = orderDetailPart.Operator,
-                //    Product = orderDetailPart.Product,
-                //    Price = orderDetailPart.Price,
-                //    Status = resObject.Status.ToLower(),
-                //    Expires = orderDetailPart.Expires,
-                //    Created_at = orderDetailPart.Created_at,
-                //    Country = orderDetailPart.Country,
-                //    Category = orderDetailPart.Category,
-                //    Email = orderDetailPart.Email,
-                //    UserId = orderDetailPart.UserId,
-                //    UserName = orderDetailPart.UserName
-                //};
 
                 orderDetailPart.Status = resObject.Status.ToLower();
-
-                //orderContent.Apply(newOrderDetailPart);
 
                 await _contentManager.UpdateAsync(orderContent);
 
@@ -168,17 +149,18 @@ namespace OrchardCore.SimService.SimApi
             }
 
             // Temp
-            var sms = new SmsPartViewModel()
-            {
-                Code = "404943",
-                Created_at = DateTime.Now,
-                Date = DateTime.Now,
-                Sender = "Google",
-                Text = "G-404943 is your Google verification code."
-            };
+            //var sms = new SmsPartViewModel()
+            //{
+            //    Code = "404943",
+            //    Created_at = DateTime.Now,
+            //    Date = DateTime.Now,
+            //    Sender = "Google",
+            //    Text = "G-404943 is your Google verification code."
+            //};
 
-            resObject.Sms.Add(sms);
-            resObject.Status = "pending";
+            //resObject.Sms.Add(sms);
+            //resObject.Status = "pending";
+            // End Temp
 
             if (resObject.Sms.Count > 0)
             {
@@ -716,7 +698,6 @@ namespace OrchardCore.SimService.SimApi
         [ActionName("stableorderproductcountry")]
         public async Task<ActionResult<List<CheckOrderDto>>> GetStableOrderByProductAndCountryAsync(string id, string product, string country)
         {
-            // check orderId from 5sim with OrderDetailPart
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
             if (user == null || !user.IsEnabled) return BadRequest();
 
@@ -761,54 +742,6 @@ namespace OrchardCore.SimService.SimApi
             return Ok(ordersReturn);
         }
 
-        [HttpGet]
-        [ActionName("stableordershistory")]
-        public async Task<ActionResult<List<CheckOrderDto>>> GetStableOrderHistoryAsync(string id, string product, string country)
-        {
-            // check orderId from 5sim with OrderDetailPart
-            var user = await _userManager.GetUserAsync(User) as Users.Models.User;
-            if (user == null || !user.IsEnabled) return BadRequest();
-
-            if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
-            {
-                return this.ChallengeOrForbid();
-            }
-
-            var simToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
-            var percentStringValue = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "Percentage");
-            var percent = string.IsNullOrEmpty(percentStringValue) ? 20 : int.Parse(percentStringValue);
-
-            var orderContent = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
-                .With<OrderDetailPartIndex>(p => p.UserId == user.Id
-                                            && p.Product == product
-                                            && p.Country == country)
-                .OrderByDescending(o => o.OrderId)
-                .Take(3).ListAsync();
-
-            if (orderContent == null) return BadRequest();
-
-            var orderDetailParts = orderContent.Select(ord => ord.As<OrderDetailPart>()).ToList();
-
-            var ordersReturn = orderDetailParts.Select(ord =>
-                                                        new
-                                                        {
-                                                            ord.InventoryId,
-                                                            ord.OrderId,
-                                                            ord.Phone,
-                                                            ord.Operator,
-                                                            ord.Product,
-                                                            ord.Price,
-                                                            ord.Status,
-                                                            ord.Expires,
-                                                            ord.Created_at,
-                                                            ord.Country,
-                                                            ord.Category
-                                                        }
-                                                    ).ToList();
-
-            return Ok(ordersReturn);
-        }
         #endregion
 
     }

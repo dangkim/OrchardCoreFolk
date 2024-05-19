@@ -255,248 +255,22 @@ namespace OrchardCore.SimService.ApiCommonFunctions
         }
         public static async Task<string> ReadCache(ISession session, IMemoryCache _memoryCache, ISignal _signal, Microsoft.Extensions.Configuration.IConfiguration _config, string contentType = "FiveSimToken")
         {
-            string fiveSimTokenCache = string.Empty;
-            string twoLineSimTokenCache = string.Empty;
-            string vSimTokenCache = string.Empty;
-
-            var fiveSimToken = string.Empty;
-            var twoLineSimToken = string.Empty;
-            var vSimToken = string.Empty;
-
-            // Get value from database
-            if (contentType == "BtcpayToken" || contentType == "BtcpayStoreKey")
+            return contentType switch
             {
-                if (contentType == "BtcpayToken")
-                {
-                    var cacheKey = _config["BtcpayCacheKey"];
-                    var signalKey = _config["BtcpaySignalCacheKey"];
-
-                    var btcpayTokenCache = "";
-                    if (!_memoryCache.TryGetValue(cacheKey, out btcpayTokenCache))
-                    {
-#if DEBUG
-                        var tokenContentBtcpay = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.ContentType == contentType && x.DisplayText.Contains("localhost")).FirstOrDefaultAsync();
-#else
-                        var tokenContentBtcpay = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.ContentType == contentType && x.DisplayText.Contains("production")).FirstOrDefaultAsync();
-#endif
-                        var btcpayTokenObj = tokenContentBtcpay.Content["BtcpayToken"];
-                        string btcpayToken = Convert.ToString(btcpayTokenObj["Token"]["Text"]);
-
-                        var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30));
-
-                        btcpayTokenCache = _memoryCache.Set(cacheKey, btcpayToken, _signal.GetToken(signalKey));
-                    }
-                    return btcpayTokenCache;
-                }
-                else if (contentType == "BtcpayStoreKey")
-                {
-                    var cacheKey = _config["BtcpayStoreIdKey"];
-                    var signalKey = _config["BtcpayStoreIdSignalKey"];
-
-                    var storeId = "";
-
-                    if (!_memoryCache.TryGetValue(cacheKey, out storeId))
-                    {
-#if DEBUG
-                        var tokenContentBtcpay = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.ContentType == contentType && x.DisplayText.Contains("localhost")).FirstOrDefaultAsync();
-#else
-                        var tokenContentBtcpay = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.ContentType == contentType && x.DisplayText.Contains("production")).FirstOrDefaultAsync();
-#endif
-
-                        var btcpayStoreKeyObj = tokenContentBtcpay.Content["BtcpayStoreKey"];
-                        string btcpayStoreId = Convert.ToString(btcpayStoreKeyObj["StoreId"]["Text"]);
-
-                        storeId = _memoryCache.Set(cacheKey, btcpayStoreId, _signal.GetToken(signalKey));
-                    }
-
-                    return storeId;
-                }
-            }
-            else
-            {
-                if (contentType == "FiveSimToken")
-                {
-                    var cacheKey = _config["FiveSimCacheKey"];
-                    var signalKey = _config["FiveSimCacheSignalKey"];
-
-                    if (!_memoryCache.TryGetValue(cacheKey, out fiveSimTokenCache))
-                    {
-                        var tokenContent = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.ContentType == contentType).FirstOrDefaultAsync();
-
-                        var simtokenObj = tokenContent.Content["FiveSimToken"];
-                        fiveSimToken = Convert.ToString(simtokenObj["Token"]["Text"]);
-
-                        fiveSimTokenCache = _memoryCache.Set(cacheKey, fiveSimToken, _signal.GetToken(signalKey));
-                    }
-
-                    return fiveSimTokenCache;
-                }
-                else if (contentType == "TwoLineSimToken")
-                {
-                    var cacheKey = _config["TwoLineSimCacheKey"];
-                    var signalKey = _config["TwoLineSimCacheSignalKey"];
-
-                    if (!_memoryCache.TryGetValue(cacheKey, out twoLineSimTokenCache))
-                    {
-                        var tokenContent = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.ContentType == contentType).FirstOrDefaultAsync();
-
-                        var simtokenObj = tokenContent.Content["TwoLineSimToken"];
-                        twoLineSimToken = Convert.ToString(simtokenObj["Token"]["Text"]);
-
-                        twoLineSimTokenCache = _memoryCache.Set(cacheKey, twoLineSimToken, _signal.GetToken(signalKey));
-                    }
-
-                    return twoLineSimTokenCache;
-                }
-                else if (contentType == "CSimToken")
-                {
-                    var cacheKey = _config["CSimCacheKey"];
-                    var signalKey = _config["CSimCacheSignalKey"];
-
-                    if (!_memoryCache.TryGetValue(cacheKey, out twoLineSimTokenCache))
-                    {
-                        var tokenContent = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.ContentType == contentType).FirstOrDefaultAsync();
-
-                        var simtokenObj = tokenContent.Content["CSimToken"];
-                        twoLineSimToken = Convert.ToString(simtokenObj["Token"]["Text"]);
-
-                        twoLineSimTokenCache = _memoryCache.Set(cacheKey, twoLineSimToken, _signal.GetToken(signalKey));
-                    }
-
-                    return twoLineSimTokenCache;
-                }
-                else if (contentType == "USimToken")
-                {
-                    var cacheKey = _config["USimCacheKey"];
-                    var signalKey = _config["USimCacheSignalKey"];
-
-                    if (!_memoryCache.TryGetValue(cacheKey, out twoLineSimTokenCache))
-                    {
-                        var tokenContent = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.ContentType == contentType).FirstOrDefaultAsync();
-
-                        var simtokenObj = tokenContent.Content["USimToken"];
-                        twoLineSimToken = Convert.ToString(simtokenObj["Token"]["Text"]);
-
-                        twoLineSimTokenCache = _memoryCache.Set(cacheKey, twoLineSimToken, _signal.GetToken(signalKey));
-                    }
-
-                    return twoLineSimTokenCache;
-                }
-                else if (contentType == "VSimToken")
-                {
-                    var cacheKey = _config["VSimCacheKey"];
-                    var signalKey = _config["VSimCacheSignalKey"];
-
-                    if (!_memoryCache.TryGetValue(cacheKey, out vSimTokenCache))
-                    {
-                        var tokenContent = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.ContentType == contentType).FirstOrDefaultAsync();
-
-                        var simtokenObj = tokenContent.Content["VSimToken"];
-                        vSimToken = Convert.ToString(simtokenObj["Token"]["Text"]);
-
-                        vSimTokenCache = _memoryCache.Set(cacheKey, vSimToken, _signal.GetToken(signalKey));
-                    }
-
-                    return vSimTokenCache;
-                }
-                else if (contentType == "Percentage")
-                {
-                    var cacheKey = _config["PercentKey"];
-                    var signalKey = _config["PercentSignalKey"];
-
-                    var percent = "";
-
-                    if (!_memoryCache.TryGetValue(cacheKey, out percent))
-                    {
-                        var tokenContent = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.ContentType == contentType).FirstOrDefaultAsync();
-
-                        var percentageObj = tokenContent.Content["Percentage"];
-                        string percentValue = Convert.ToString(percentageObj["Percent"]["Text"]);
-
-                        percent = _memoryCache.Set(cacheKey, percentValue, _signal.GetToken(signalKey));
-                    }
-
-                    return percent;
-                }
-                else if (contentType == "LSimPercentage")
-                {
-                    var cacheKey = _config["LSimPercentKey"];
-                    var signalKey = _config["LSimPercentSignalKey"];
-
-                    var percent = "";
-
-                    if (!_memoryCache.TryGetValue(cacheKey, out percent))
-                    {
-                        var tokenContent = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.ContentType == contentType).FirstOrDefaultAsync();
-
-                        var percentageObj = tokenContent.Content["LSimPercentage"];
-                        string percentValue = Convert.ToString(percentageObj["Percent"]["Text"]);
-
-                        percent = _memoryCache.Set(cacheKey, percentValue, _signal.GetToken(signalKey));
-                    }
-
-                    return percent;
-                }
-                else if (contentType == "CSimPercentage")
-                {
-                    var cacheKey = _config["CSimPercentKey"];
-                    var signalKey = _config["CSimPercentSignalKey"];
-
-                    var percent = "";
-
-                    if (!_memoryCache.TryGetValue(cacheKey, out percent))
-                    {
-                        var tokenContent = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.ContentType == contentType).FirstOrDefaultAsync();
-
-                        var percentageObj = tokenContent.Content["CSimPercentage"];
-                        string percentValue = Convert.ToString(percentageObj["Percent"]["Text"]);
-
-                        percent = _memoryCache.Set(cacheKey, percentValue, _signal.GetToken(signalKey));
-                    }
-
-                    return percent;
-                }
-                else if (contentType == "USimPercentage")
-                {
-                    var cacheKey = _config["USimPercentKey"];
-                    var signalKey = _config["USimPercentSignalKey"];
-
-                    var percent = "";
-
-                    if (!_memoryCache.TryGetValue(cacheKey, out percent))
-                    {
-                        var tokenContent = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.ContentType == contentType).FirstOrDefaultAsync();
-
-                        var percentageObj = tokenContent.Content["USimPercentage"];
-                        string percentValue = Convert.ToString(percentageObj["Percent"]["Text"]);
-
-                        percent = _memoryCache.Set(cacheKey, percentValue, _signal.GetToken(signalKey));
-                    }
-
-                    return percent;
-                }
-                else if (contentType == "VSimPercentage")
-                {
-                    var cacheKey = _config["VSimPercentKey"];
-                    var signalKey = _config["VSimPercentSignalKey"];
-
-                    var percent = "";
-
-                    if (!_memoryCache.TryGetValue(cacheKey, out percent))
-                    {
-                        var tokenContent = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.ContentType == contentType).FirstOrDefaultAsync();
-
-                        var percentageObj = tokenContent.Content["VSimPercentage"];
-                        string percentValue = Convert.ToString(percentageObj["Percent"]["Text"]);
-
-                        percent = _memoryCache.Set(cacheKey, percentValue, _signal.GetToken(signalKey));
-                    }
-
-                    return percent;
-                }
-            }
-
-            return fiveSimTokenCache;
+                "BtcpayToken" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["BtcpayCacheKey"], _config["BtcpaySignalCacheKey"], contentType, "BtcpayToken", "Token"),
+                "BtcpayStoreKey" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["BtcpayStoreIdKey"], _config["BtcpayStoreIdSignalKey"], contentType, "BtcpayStoreKey", "Token"),
+                "FiveSimToken" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["FiveSimCacheKey"], _config["FiveSimCacheSignalKey"], contentType, "FiveSimToken", "Token"),
+                "TwoLineSimToken" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["TwoLineSimCacheKey"], _config["TwoLineSimCacheSignalKey"], contentType, "TwoLineSimToken", "Token"),
+                "CSimToken" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["CSimCacheKey"], _config["CSimCacheSignalKey"], contentType, "CSimToken", "Token"),
+                "USimToken" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["USimCacheKey"], _config["USimCacheSignalKey"], contentType, "USimToken", "Token"),
+                "VSimToken" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["VSimCacheKey"], _config["VSimCacheSignalKey"], contentType, "VSimToken", "Token"),
+                "Percentage" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["PercentKey"], _config["PercentSignalKey"], contentType, "Percentage", "Percent"),
+                "LSimPercentage" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["LSimPercentKey"], _config["LSimPercentSignalKey"], contentType, "LSimPercentage", "Percent"),
+                "CSimPercentage" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["CSimPercentKey"], _config["CSimPercentSignalKey"], contentType, "CSimPercentage", "Percent"),
+                "USimPercentage" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["USimPercentKey"], _config["USimPercentSignalKey"], contentType, "USimPercentage", "Percent"),
+                "VSimPercentage" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["VSimPercentKey"], _config["VSimPercentSignalKey"], contentType, "VSimPercentage", "Percent"),
+                _ => string.Empty,
+            };
         }
 
         public static async Task<string> ReadExchangeRateCache(ISession session, IMemoryCache _memoryCache, ISignal _signal, Microsoft.Extensions.Configuration.IConfiguration _config, string currency = "VND")
@@ -1030,6 +804,22 @@ namespace OrchardCore.SimService.ApiCommonFunctions
             }
             return false;
         }
+
+        private static async Task<string> GetTokenFromCacheOrDb(ISession session, IMemoryCache memoryCache, ISignal signal, string cacheKey, string signalKey, string contentType, string contentField, string valueObject)
+        {
+            if (!memoryCache.TryGetValue(cacheKey, out string cachedToken))
+            {
+                var tokenContent = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.ContentType == contentType).FirstOrDefaultAsync();
+
+                var tokenObj = tokenContent.Content[contentField];
+
+                string token = Convert.ToString(tokenObj[valueObject]["Text"]);
+
+                cachedToken = memoryCache.Set(cacheKey, token, signal.GetToken(signalKey));
+            }
+            return cachedToken;
+        }
+
         #endregion
     }
 }

@@ -185,7 +185,7 @@ namespace OrchardCore.SimService.SimApi
         /// Provides orders history by choosen category.
         /// </remarks> 
         [HttpGet]
-        [ActionName("orders")]
+        [ActionName("stableordershistory")]
         [ProducesResponseType(typeof(OrdersHistoryDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
@@ -233,7 +233,7 @@ namespace OrchardCore.SimService.SimApi
             "\nrequest.AddHeader(\"Authorization\", \"Bearer \" + token);" +
             "\nrequest.AddHeader(\"Accept\", \"application/json\");" +
             "\nvar response = await client.ExecuteGetAsync(request);")]
-        public async Task<ActionResult<OrdersHistoryDto>> OrdersRequestAsync(string category, string date, int limit, int offset, string order, string phone, bool reverse, string status)
+        public async Task<ActionResult<OrdersHistoryDto>> OrdersRequestAsync(string category, string date, int limit, int offset, string order, string phone, bool reverse, string status, string product)
         {
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
 
@@ -245,7 +245,7 @@ namespace OrchardCore.SimService.SimApi
 
             IEnumerable<ContentItem> orderTypes = null;
 
-            orderTypes = await FilterOrderHistory(user.Id, category, date, limit, offset, order, phone, reverse, status);
+            orderTypes = await FilterOrderHistory(user.Id, category, date, limit, offset, order, phone, reverse, status, product);
 
             if (orderTypes == null)
             {
@@ -480,7 +480,7 @@ namespace OrchardCore.SimService.SimApi
             }
         }
 
-        private async Task<IEnumerable<ContentItem>> FilterOrderHistory(long userId, string category, string date, int limit, int offset, string order, string phone, bool reverse, string status)
+        private async Task<IEnumerable<ContentItem>> FilterOrderHistory(long userId, string category, string date, int limit, int offset, string order, string phone, bool reverse, string status, string product)
         {
             var normalizedStatus = status?.ToLower() ?? "";
 
@@ -489,19 +489,20 @@ namespace OrchardCore.SimService.SimApi
                    .With<OrderDetailPartIndex>(p => p.UserId == userId)
                    .With<OrderDetailPartIndex>(p => p.Phone.Contains(phone ?? ""))
                    .With<OrderDetailPartIndex>(p => p.Category.Contains(category ?? ""))
+                   .With<OrderDetailPartIndex>(p => p.Product.Contains(product ?? ""))
                    .With<OrderDetailPartIndex>(p => p.Status.Contains(normalizedStatus ?? ""));
 
 
             if (!string.IsNullOrEmpty(date))
             {
-                var parsedDate = DateTime.ParseExact(date, "dd-MM-yy", CultureInfo.InvariantCulture);
+                var parsedDate = DateTime.ParseExact(date, "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
                 orderTypes = orderTypes
                    .With<OrderDetailPartIndex>(p => p.Created_at >= parsedDate && p.Created_at <= parsedDate.AddDays(1));
             }
 
             var sortOptions = new Dictionary<string, Expression<Func<OrderDetailPartIndex, object>>>
                                         {
-                                            { "id", p => p.Id },
+                                            { "order_id", p => p.OrderId },
                                             { "product_name", p => p.Product },
                                             { "created_at", p => p.Created_at },
                                             { "country", p => p.Country },
