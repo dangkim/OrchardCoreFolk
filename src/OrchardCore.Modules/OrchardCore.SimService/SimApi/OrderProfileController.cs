@@ -27,6 +27,9 @@ using System.Linq;
 using YesSql.Services;
 using OrchardCore.Lists.Models;
 using static System.Net.Mime.MediaTypeNames;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -44,6 +47,7 @@ namespace OrchardCore.SimService.SimApi
         private readonly Microsoft.Extensions.Configuration.IConfiguration _config;
         private readonly IMemoryCache _memoryCache;
         private readonly ISignal _signal;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public OrderProfileController(
             ISession session,
@@ -52,7 +56,8 @@ namespace OrchardCore.SimService.SimApi
             IContentManager contentManager,
             UserManager<IUser> userManager,
             IAuthorizationService authorizationService,
-            Microsoft.Extensions.Configuration.IConfiguration config)
+            Microsoft.Extensions.Configuration.IConfiguration config,
+            IHttpClientFactory httpClientFactory)
         {
             _session = session;
             _memoryCache = memoryCache;
@@ -61,7 +66,7 @@ namespace OrchardCore.SimService.SimApi
             _userManager = userManager;
             _authorizationService = authorizationService;
             _config = config;
-            //fiveSimToken = _config["FiveSimToken"];
+            _httpClientFactory = httpClientFactory;
         }
 
         #region Check order
@@ -107,7 +112,6 @@ namespace OrchardCore.SimService.SimApi
             "\nvar response = await client.ExecuteGetAsync(request);")]
         public async Task<ActionResult<CheckOrderDto>> CheckOrderAsync(string id)
         {
-            // check orderId from 5sim with OrderDetailPart
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
             if (user == null || !user.IsEnabled) return BadRequest();
 
@@ -116,13 +120,15 @@ namespace OrchardCore.SimService.SimApi
                 return this.ChallengeOrForbid();
             }
 
+            var orderId = long.Parse(id);
+
             var simToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
             var percentStringValue = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "Percentage");
             var percent = string.IsNullOrEmpty(percentStringValue) ? 20 : int.Parse(percentStringValue);
 
             var orderContent = await _session
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
-                .With<OrderDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == long.Parse(id))
+                .With<OrderDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == orderId)
                 .FirstOrDefaultAsync();
 
             if (orderContent == null) return BadRequest();
@@ -131,7 +137,17 @@ namespace OrchardCore.SimService.SimApi
 
             if (orderDetailPart == null) return BadRequest();
 
-            var resObject = await ApiCommon.CheckOrderAsync(simToken, id);
+            using var httpClient = _httpClientFactory.CreateClient("fsim");
+
+            var url = string.Format("https://5sim.net/v1/user/check/{0}", orderId);
+
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", simToken);
+
+            using var response = await httpClient.GetAsync(url);
+
+            var resObject = await response.Content.ReadFromJsonAsync<OrderDetailPartViewModel>();
+
+            //var resObject = await ApiCommon.CheckOrderAsync(simToken, id);
 
             if (!orderDetailPart.Status.Equals(resObject.Status, StringComparison.OrdinalIgnoreCase))
             {
@@ -291,15 +307,12 @@ namespace OrchardCore.SimService.SimApi
 
                                 if (resultSms.Succeeded)
                                 {
-                                    //var smsContainedPart = new { ListContentItemId = orderContent.ContentItemId, Order = 0 };
-                                    //var smsObjContainedPart = JObject.FromObject(smsContainedPart);
                                     newSmsContentItem.Alter<ContainedPart>(part =>
                                     {
                                         part.ListContentItemId = orderContent.ContentItemId;
                                         part.Order = 0;
                                     });
 
-                                    //.Content["ContainedPart"] = smsObjContainedPart;
                                     await _contentManager.PublishAsync(newSmsContentItem);
                                 }
                             }
@@ -726,7 +739,7 @@ namespace OrchardCore.SimService.SimApi
                                                         new
                                                         {
                                                             ord.InventoryId,
-                                                            ord.OrderId,
+                                                            Id = ord.OrderId,
                                                             ord.Phone,
                                                             ord.Operator,
                                                             ord.Product,

@@ -209,7 +209,7 @@ namespace OrchardCore.SimService.SimApi
                     return Ok(new
                     {
                         newOrderDetailPart.InventoryId,
-                        newOrderDetailPart.OrderId,
+                        Id = newOrderDetailPart.OrderId,
                         newOrderDetailPart.Phone,
                         newOrderDetailPart.Operator,
                         newOrderDetailPart.Product,

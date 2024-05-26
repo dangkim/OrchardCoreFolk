@@ -25,6 +25,7 @@ using OrchardCore.SimService.Permissions;
 using System.Linq.Expressions;
 using System.Linq;
 using YesSql.Services;
+using System.Net.Http;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -42,6 +43,7 @@ namespace OrchardCore.SimService.SimApi
         private readonly IDbConnectionAccessor _dbConnectionAccessor;
         private readonly IMemoryCache _memoryCache;
         private readonly ISignal _signal;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public UserProfileController(
             ISession session,
@@ -51,7 +53,8 @@ namespace OrchardCore.SimService.SimApi
             IContentManager contentManager,
             UserManager<IUser> userManager,
             IAuthorizationService authorizationService,
-            Microsoft.Extensions.Configuration.IConfiguration config)
+            Microsoft.Extensions.Configuration.IConfiguration config,
+            IHttpClientFactory httpClientFactory)
         {
             _session = session;
             _memoryCache = memoryCache;
@@ -61,6 +64,7 @@ namespace OrchardCore.SimService.SimApi
             _userManager = userManager;
             _authorizationService = authorizationService;
             _config = config;
+            _httpClientFactory = httpClientFactory;
         }
 
         #region Balance Request
@@ -496,8 +500,15 @@ namespace OrchardCore.SimService.SimApi
             if (!string.IsNullOrEmpty(date))
             {
                 var parsedDate = DateTime.ParseExact(date, "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+
+                // Specify that the DateTime is in local time
+                var localDateTimeWithKind = DateTime.SpecifyKind(parsedDate, DateTimeKind.Local);
+
+                // Convert to UTC
+                var utcDateTime = localDateTimeWithKind.ToUniversalTime();
+
                 orderTypes = orderTypes
-                   .With<OrderDetailPartIndex>(p => p.Created_at >= parsedDate && p.Created_at <= parsedDate.AddDays(1));
+                   .With<OrderDetailPartIndex>(p => p.Created_at >= utcDateTime && p.Created_at <= utcDateTime.AddDays(1));
             }
 
             var sortOptions = new Dictionary<string, Expression<Func<OrderDetailPartIndex, object>>>
