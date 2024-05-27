@@ -30,6 +30,7 @@ using static System.Net.Mime.MediaTypeNames;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using OrchardCore.Data;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -41,6 +42,7 @@ namespace OrchardCore.SimService.SimApi
     {
         //public string fiveSimToken;
         private readonly ISession _session;
+        private readonly IReadOnlySession _sessionReadOnly;
         private readonly IContentManager _contentManager;
         private readonly UserManager<IUser> _userManager;
         private readonly IAuthorizationService _authorizationService;
@@ -51,6 +53,7 @@ namespace OrchardCore.SimService.SimApi
 
         public OrderProfileController(
             ISession session,
+            IReadOnlySession sessionReadOnly,
             IMemoryCache memoryCache,
             ISignal signal,
             IContentManager contentManager,
@@ -60,6 +63,7 @@ namespace OrchardCore.SimService.SimApi
             IHttpClientFactory httpClientFactory)
         {
             _session = session;
+            _sessionReadOnly = sessionReadOnly;
             _memoryCache = memoryCache;
             _signal = signal;
             _contentManager = contentManager;
@@ -122,11 +126,11 @@ namespace OrchardCore.SimService.SimApi
 
             var orderId = long.Parse(id);
 
-            var simToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
-            var percentStringValue = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "Percentage");
+            var simToken = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config);
+            var percentStringValue = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config, "Percentage");
             var percent = string.IsNullOrEmpty(percentStringValue) ? 20 : int.Parse(percentStringValue);
 
-            var orderContent = await _session
+            var orderContent = await _sessionReadOnly
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
                 .With<OrderDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == orderId)
                 .FirstOrDefaultAsync();
@@ -147,11 +151,8 @@ namespace OrchardCore.SimService.SimApi
 
             var resObject = await response.Content.ReadFromJsonAsync<OrderDetailPartViewModel>();
 
-            //var resObject = await ApiCommon.CheckOrderAsync(simToken, id);
-
             if (!orderDetailPart.Status.Equals(resObject.Status, StringComparison.OrdinalIgnoreCase))
             {
-
                 orderDetailPart.Status = resObject.Status.ToLower();
 
                 await _contentManager.UpdateAsync(orderContent);
@@ -185,7 +186,7 @@ namespace OrchardCore.SimService.SimApi
                     // Create List of SmsType and insert this list to Orders
                     foreach (var itemSms in resObject.Sms)
                     {
-                        var smsContent = await _session
+                        var smsContent = await _sessionReadOnly
                            .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "SmsType" && index.Published && index.Latest)
                            .With<SmsPartIndex>(p => p.UserId == user.Id && p.OrderId == Int64.Parse(id) && p.Code == itemSms.Code)
                            .FirstOrDefaultAsync();
@@ -193,14 +194,14 @@ namespace OrchardCore.SimService.SimApi
                         if (smsContent == null)
                         {
                             //Get payment of this order
-                            var paymentContent = await _session
+                            var paymentContent = await _sessionReadOnly
                             .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Payments" && index.Published && index.Latest)
                             .With<PaymentDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == Int64.Parse(id))
                             .FirstOrDefaultAsync();
 
                             if (paymentContent == null && resObject.Sms.Count == 1)
                             {
-                                var userContent = await _session
+                                var userContent = await _sessionReadOnly
                                     .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                                     .With<UserProfilePartIndex>(p => p.UserId == user.Id)
                                     .FirstOrDefaultAsync();
@@ -298,7 +299,7 @@ namespace OrchardCore.SimService.SimApi
                                     Email = user.Email,
                                     UserId = user.Id,
                                     UserName = user.UserName,
-                                    OrderId = Int64.Parse(id)
+                                    OrderId = long.Parse(id)
                                 };
 
                                 newSmsContentItem.Apply(newSmsPart);

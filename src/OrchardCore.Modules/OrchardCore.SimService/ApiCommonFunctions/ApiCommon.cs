@@ -16,6 +16,7 @@ using OrchardCore.Environment.Cache;
 using OrchardCore.Users.Models;
 using RestSharp;
 using YesSql;
+using OrchardCore.Data;
 
 namespace OrchardCore.SimService.ApiCommonFunctions
 {
@@ -362,20 +363,6 @@ namespace OrchardCore.SimService.ApiCommonFunctions
             {
                 return new BuyHostingNumberDto();
             }
-        }
-
-        public static async Task<OrderDetailPartViewModel> CheckOrderAsync(string simToken, string orderId)
-        {
-            var url = string.Format("https://5sim.net/v1/user/check/{0}", orderId);
-
-            var client = new RestClient(url);
-            var request = new RestRequest();
-            request.AddHeader("Authorization", "Bearer " + simToken);
-
-            var response = await client.ExecuteGetAsync(request);
-            var resObject = JsonConvert.DeserializeObject<OrderDetailPartViewModel>(response.Content);
-
-            return resObject;
         }
 
         public static async Task<OrderDetailPartViewModel> CheckOrderWareHouseTwoAsync(string simToken, string orderId, int inventory = (int)InventoryEnum.LSim)
