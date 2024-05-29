@@ -50,6 +50,12 @@ namespace OrchardCore.SimService.SimApi
         private readonly IMemoryCache _memoryCache;
         private readonly ISignal _signal;
         private readonly IHttpClientFactory _httpClientFactory;
+        private const string PENDING = "pending";
+        private const string CANCELED = "canceled";
+        private const string RECEIVED = "received";
+        private const string BANNED = "banned";
+        private const string TIMEOUT = "timeout";
+        private const string FINISHED = "finished";
 
         public OrderProfileController(
             ISession session,
@@ -265,7 +271,7 @@ namespace OrchardCore.SimService.SimApi
                                         Email = userProfilePart.Email,
                                         UserId = userProfilePart.UserId,
                                         UserName = userProfilePart.UserName,
-                                        OrderId = Int64.Parse(id)
+                                        OrderId = orderId
                                     };
 
                                     newPaymentContent.Apply(newPaymentDetailPart);
@@ -379,27 +385,29 @@ namespace OrchardCore.SimService.SimApi
                 return this.ChallengeOrForbid();
             }
 
-            var fiveSimToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
+            var orderId = long.Parse(id);
+            var simToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
 
-            var orderContent = await _session
+            var orderContent = await _sessionReadOnly
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
-                .With<OrderDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == Int64.Parse(id))
+                .With<OrderDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == orderId)
                 .FirstOrDefaultAsync();
 
             if (orderContent == null) return BadRequest();
 
-            var url = string.Format("https://5sim.net/v1/user/finish/{0}", id);
+            using var httpClient = _httpClientFactory.CreateClient("fsim");
 
-            var client = new RestClient(url);
-            var request = new RestRequest();
-            request.AddHeader("Authorization", "Bearer " + fiveSimToken);
+            var url = string.Format("https://5sim.net/v1/user/finish/{0}", orderId);
 
-            var response = await client.ExecuteGetAsync(request);
-            var resObject = JsonConvert.DeserializeObject<OrderDetailPartViewModel>(response.Content);
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", simToken);
 
-            var orderDetailPart = orderContent.Content["OrderDetailPart"];
+            using var response = await httpClient.GetAsync(url);
 
-            if (orderDetailPart.Status.ToString().ToLower() != "finished")
+            var resObject = await response.Content.ReadFromJsonAsync<OrderDetailPartViewModel>();
+
+            var orderDetailPart = orderContent.As<OrderDetailPart>();
+
+            if (!orderDetailPart.Status.Equals(FINISHED, StringComparison.OrdinalIgnoreCase))
             {
                 var newOrderDetailPart = new OrderDetailPart
                 {
@@ -484,27 +492,30 @@ namespace OrchardCore.SimService.SimApi
                 return this.ChallengeOrForbid();
             }
 
-            var fiveSimToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
+            var orderId = long.Parse(id);
 
-            var orderContent = await _session
+            var simToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
+
+            var orderContent = await _sessionReadOnly
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
-                .With<OrderDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == Int64.Parse(id))
+                .With<OrderDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == orderId)
                 .FirstOrDefaultAsync();
 
             if (orderContent == null) return BadRequest();
 
-            var url = string.Format("https://5sim.net/v1/user/cancel/{0}", id);
+            using var httpClient = _httpClientFactory.CreateClient("fsim");
 
-            var client = new RestClient(url);
-            var request = new RestRequest();
-            request.AddHeader("Authorization", "Bearer " + fiveSimToken);
+            var url = string.Format("https://5sim.net/v1/user/cancel/{0}", orderId);
 
-            var response = await client.ExecuteGetAsync(request);
-            var resObject = JsonConvert.DeserializeObject<OrderDetailPartViewModel>(response.Content);
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", simToken);
 
-            var orderDetailPart = orderContent.Content["OrderDetailPart"];
+            using var response = await httpClient.GetAsync(url);
 
-            if (orderDetailPart.Status.ToString().ToLower() != "canceled")
+            var resObject = await response.Content.ReadFromJsonAsync<OrderDetailPartViewModel>();
+
+            var orderDetailPart = orderContent.As<OrderDetailPart>();
+            
+            if (!orderDetailPart.Status.Equals(CANCELED, StringComparison.OrdinalIgnoreCase))
             {
                 var newOrderDetailPart = new OrderDetailPart
                 {
@@ -588,27 +599,30 @@ namespace OrchardCore.SimService.SimApi
                 return this.ChallengeOrForbid();
             }
 
-            var fiveSimToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
+            var orderId = long.Parse(id);
 
-            var orderContent = await _session
+            var simToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
+
+            var orderContent = await _sessionReadOnly
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
-                .With<OrderDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == Int64.Parse(id))
+                .With<OrderDetailPartIndex>(p => p.UserId == user.Id && p.OrderId == orderId)
                 .FirstOrDefaultAsync();
 
             if (orderContent == null) return BadRequest();
 
-            string url = string.Format("https://5sim.net/v1/user/ban/{0}", id);
+            using var httpClient = _httpClientFactory.CreateClient("fsim");
 
-            var client = new RestClient(url);
-            var request = new RestRequest();
-            request.AddHeader("Authorization", "Bearer " + fiveSimToken);
+            var url = string.Format("https://5sim.net/v1/user/ban/{0}", orderId);
 
-            var response = await client.ExecuteGetAsync(request);
-            var resObject = JsonConvert.DeserializeObject<OrderDetailPartViewModel>(response.Content);
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", simToken);
 
-            var orderDetailPart = orderContent.Content["OrderDetailPart"];
+            using var response = await httpClient.GetAsync(url);
 
-            if (orderDetailPart.Status.ToString().ToLower() != "banned")
+            var resObject = await response.Content.ReadFromJsonAsync<OrderDetailPartViewModel>();
+
+            var orderDetailPart = orderContent.As<OrderDetailPart>();
+
+            if (!orderDetailPart.Status.Equals(BANNED, StringComparison.OrdinalIgnoreCase))
             {
                 var newOrderDetailPart = new OrderDetailPart
                 {
@@ -720,15 +734,17 @@ namespace OrchardCore.SimService.SimApi
                 return this.ChallengeOrForbid();
             }
 
-            var simToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
-            var percentStringValue = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "Percentage");
+            var simToken = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config);
+            var percentStringValue = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config, "Percentage");
             var percent = string.IsNullOrEmpty(percentStringValue) ? 20 : int.Parse(percentStringValue);
 
-            var orderContent = await _session
+            var orderContent = await _sessionReadOnly
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
                 .With<OrderDetailPartIndex>(p => p.UserId == user.Id
                                             && p.Product == product
-                                            && p.Country == country)
+                                            && p.Country == country
+                                            && p.Expires > DateTime.UtcNow
+                                            && (p.Status == PENDING || p.Status == RECEIVED))
                 .OrderByDescending(o => o.OrderId)
                 .Take(3).ListAsync();
 
