@@ -26,6 +26,7 @@ using System.Linq.Expressions;
 using System.Linq;
 using YesSql.Services;
 using System.Net.Http;
+using OrchardCore.Lists.Models;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -36,6 +37,7 @@ namespace OrchardCore.SimService.SimApi
     public class UserProfileController : Controller
     {
         private readonly ISession _session;
+        private readonly IReadOnlySession _readOnlySession;
         private readonly IContentManager _contentManager;
         private readonly UserManager<IUser> _userManager;
         private readonly IAuthorizationService _authorizationService;
@@ -47,6 +49,7 @@ namespace OrchardCore.SimService.SimApi
 
         public UserProfileController(
             ISession session,
+            IReadOnlySession readOnlySession,
             IMemoryCache memoryCache,
             ISignal signal,
             IDbConnectionAccessor dbConnectionAccessor,
@@ -57,6 +60,7 @@ namespace OrchardCore.SimService.SimApi
             IHttpClientFactory httpClientFactory)
         {
             _session = session;
+            _readOnlySession = readOnlySession;
             _memoryCache = memoryCache;
             _signal = signal;
             _dbConnectionAccessor = dbConnectionAccessor;
@@ -256,71 +260,28 @@ namespace OrchardCore.SimService.SimApi
                 return Forbid();
             }
 
-            var data = new List<object>();
-
-            foreach (var itemType in orderTypes)
-            {
-                var item = itemType.As<OrderDetailPart>();
-
-                var listSms = new List<object>();
-                // Get containedItem: smsPart
-                var smsContent = await _session
-                       .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "SmsType" && index.Published && index.Latest)
-                       .With<SmsPartIndex>(p => p.UserId == user.Id && p.OrderId == item.OrderId)
-                       .ListAsync();
-
-                var statusLocal = item.Status;
-
-                if ((item.Status == "received" || item.Status == "pending") && item.Expires > DateTime.UtcNow)
-                {
-                    statusLocal = item.Status;
-                }
-                else if ((item.Status == "received" || item.Status == "pending") && item.Expires <= DateTime.UtcNow)
-                {
-                    statusLocal = "timeout";
-                }
-
-                foreach (var sms in smsContent)
-                {
-                    var smsPart = sms.As<SmsPart>();
-                    if (smsPart != null)
-                    {
-                        var smsObject = new
-                        {
-                            code = smsPart.Code,
-                            created_at = smsPart.Created_at,
-                            date = smsPart.Created_at,
-                            sender = smsPart.Sender,
-                            text = smsPart.Text,
-                        };
-
-                        listSms.Add(smsObject);
-                    }
-                }
-
-                var orderDetailPartObject = new
-                {
-                    item.Country,
-                    item.Category,
-                    item.Created_at,
-                    item.Expires,
-                    InventoryId = item.InventoryId,
-                    Id = item.OrderId,
-                    item.Operator,
-                    item.Phone,
-                    item.Price,
-                    item.Product,
-                    status = statusLocal,
-                    sms = listSms,
-                };
-
-                data.Add(orderDetailPartObject);
-            }
+            var orderValues = orderTypes.Select(i => i.As<OrderDetailPart>());
 
             var returnedResult = new
             {
-                data,
-                total = data.Count
+                data = orderValues.Select(orderPart => new
+                {
+                    orderPart.InventoryId,
+                    Id = orderPart.OrderId,
+                    orderPart.Phone,
+                    orderPart.Operator,
+                    orderPart.Product,
+                    orderPart.Price,
+                    orderPart.Status,
+                    orderPart.Expires,
+                    orderPart.Created_at,
+                    orderPart.Country,
+                    orderPart.Email,
+                    orderPart.UserId,
+                    orderPart.UserName,
+                    orderPart.Category
+                }),
+                total = orderValues.Count()
             };
 
             return Ok(returnedResult);
@@ -488,7 +449,7 @@ namespace OrchardCore.SimService.SimApi
         {
             var normalizedStatus = status?.ToLower() ?? "";
 
-            var orderTypes = _session
+            var orderTypes = _readOnlySession
                    .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published)
                    .With<OrderDetailPartIndex>(p => p.UserId == userId)
                    .With<OrderDetailPartIndex>(p => p.Phone.Contains(phone ?? ""))
@@ -525,10 +486,10 @@ namespace OrchardCore.SimService.SimApi
             var sortExpression = sortOptions.ContainsKey(order.ToLower()) ? sortOptions[order.ToLower()] : sortOptions["id"];
 
             // Apply sorting
-            var sortedOrderTypes = reverse ? await orderTypes.OrderByDescending(sortExpression).ListAsync() : await orderTypes.OrderBy(sortExpression).ListAsync();
+            var sortedOrderTypes = reverse ? await orderTypes.OrderByDescending(sortExpression).Skip(offset).Take(limit).ListAsync() : await orderTypes.OrderBy(sortExpression).Skip(offset).Take(limit).ListAsync();
 
             // Apply pagination
-            sortedOrderTypes = sortedOrderTypes.Skip(offset).Take(limit);
+            //sortedOrderTypes = sortedOrderTypes.Skip(offset).Take(limit);
 
             return sortedOrderTypes;
         }
