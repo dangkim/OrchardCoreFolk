@@ -160,6 +160,7 @@ namespace OrchardCore.SimService.SimApi
             if (!orderDetailPart.Status.Equals(resObject.Status, StringComparison.OrdinalIgnoreCase))
             {
                 orderDetailPart.Status = resObject.Status.ToLower();
+                orderContent.Apply(orderDetailPart);
 
                 await _contentManager.UpdateAsync(orderContent);
 
@@ -417,7 +418,7 @@ namespace OrchardCore.SimService.SimApi
                     Operator = orderDetailPart.Operator,
                     Product = orderDetailPart.Product,
                     Price = orderDetailPart.Price,
-                    Status = resObject.Status,
+                    Status = resObject.Status.ToLower(),
                     Expires = orderDetailPart.Expires,
                     Created_at = orderDetailPart.Created_at,
                     Country = orderDetailPart.Country,
@@ -525,7 +526,7 @@ namespace OrchardCore.SimService.SimApi
                     Operator = orderDetailPart.Operator,
                     Product = orderDetailPart.Product,
                     Price = orderDetailPart.Price,
-                    Status = resObject.Status,
+                    Status = resObject.Status.ToLower(),
                     Expires = orderDetailPart.Expires,
                     Created_at = orderDetailPart.Created_at,
                     Country = orderDetailPart.Country,
@@ -632,7 +633,7 @@ namespace OrchardCore.SimService.SimApi
                     Operator = orderDetailPart.Operator,
                     Product = orderDetailPart.Product,
                     Price = orderDetailPart.Price,
-                    Status = resObject.Status,
+                    Status = resObject.Status.ToLower(),
                     Expires = orderDetailPart.Expires,
                     Created_at = orderDetailPart.Created_at,
                     Country = orderDetailPart.Country,
