@@ -281,9 +281,6 @@ namespace OrchardCore.SimService.Controllers
                 if (user != null)
                 {
                     var time = BitConverter.GetBytes(DateTime.UtcNow.ToBinary());
-                    var key = Guid.NewGuid().ToByteArray();
-                    var token = Convert.ToBase64String(time.Concat(key).ToArray());
-
                     var newContentItem = await _contentManager.NewAsync("UserProfile");
 
                     newContentItem.Owner = user.UserName;
@@ -294,16 +291,7 @@ namespace OrchardCore.SimService.Controllers
                         Email = model.Email,
                         UserId = (user as Users.Models.User).Id,
                         UserName = user.UserName,
-                        Vendor = "demo",
-                        DefaultForwardingNumber = "",
                         Balance = 0m,
-                        Rating = 96,
-                        DefaultCoutryName = "vietnam",
-                        DefaultIso = "vn",
-                        DefaultPrefix = "+84",
-                        DefaultOperatorName = "virtual16",
-                        FrozenBalance = 0m,
-                        TokenApi = token,
                     };
 
                     newContentItem.Apply(userProfilePart);

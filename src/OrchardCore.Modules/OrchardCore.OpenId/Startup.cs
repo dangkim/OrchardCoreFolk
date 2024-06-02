@@ -122,7 +122,7 @@ namespace OrchardCore.OpenId
                 {
                     options.UseAspNetCore();
                     options.UseDataProtection();
-                    options.SetAccessTokenLifetime(TimeSpan.FromDays(1));
+                    options.SetAccessTokenLifetime(TimeSpan.FromDays(366));
                 });
 
             services.TryAddSingleton<IOpenIdServerService, OpenIdServerService>();

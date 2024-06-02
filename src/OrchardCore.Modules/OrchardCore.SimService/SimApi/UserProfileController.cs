@@ -27,6 +27,8 @@ using System.Linq;
 using YesSql.Services;
 using System.Net.Http;
 using OrchardCore.Lists.Models;
+using Org.BouncyCastle.Utilities.Collections;
+using OrchardCore.Indexing;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -112,17 +114,6 @@ namespace OrchardCore.SimService.SimApi
             "\nvar response = await client.ExecuteGetAsync(request);")]
         public async Task<ActionResult<ProfileDto>> BalanceRequestAsync()
         {
-            //var user = await _userManager.GetUserAsync(User) as Users.Models.User;
-            //if (user == null) return BadRequest();
-
-            //var fiveSimToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
-
-            //var client = new RestClient("https://5sim.net/v1/user/profile");
-            //var request = new RestRequest();
-            //request.AddHeader("Authorization", "Bearer " + fiveSimToken);
-            //request.AddHeader("Accept", "application/json");
-            //var response = await client.ExecuteGetAsync<ProfileDto>(request);
-            //return Ok(response);
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
 
             if (user == null)
@@ -134,6 +125,25 @@ namespace OrchardCore.SimService.SimApi
             {
                 return Forbid();
             }
+
+
+            //await using var connection = _dbConnectionAccessor.CreateConnection();
+            //await connection.OpenAsync();
+            //var dialect = _session.Store.Configuration.SqlDialect;
+            //var sqlBuilder = dialect.CreateBuilder(_session.Store.Configuration.TablePrefix);
+            //sqlBuilder.Select();
+            //sqlBuilder.InsertSelector($"SUM(od.{dialect.QuoteForColumnName("Price")}) AS TotalPrice");
+            //sqlBuilder.Table(nameof(ContentItemIndex), "ci", _session.Store.Configuration.Schema);
+            //sqlBuilder.Join(JoinType.Inner, nameof(OrderDetailPartIndex), "od", "ContentItemId", "ci", "ContentItemId", _session.Store.Configuration.Schema);
+            //sqlBuilder.WhereAnd($"ci.{dialect.QuoteForColumnName("ContentType")} = 'Orders'");
+            //sqlBuilder.WhereAnd($"ci.{dialect.QuoteForColumnName("Published")} = 1");
+            //sqlBuilder.WhereAnd($"ci.{dialect.QuoteForColumnName("Latest")} = 1");
+            //sqlBuilder.WhereAnd($"od.{dialect.QuoteForColumnName("UserId")} = @UserId");
+            //sqlBuilder.WhereOr($"(od.{dialect.QuoteForColumnName("Status")} = 'received'");
+            //sqlBuilder.WhereOr($"od.{dialect.QuoteForColumnName("Status")} = 'pending'");
+            //sqlBuilder.WhereOr($"od.{dialect.QuoteForColumnName("Status")} = 'waiting')");
+            //sqlBuilder.WhereAnd($"od.{dialect.QuoteForColumnName("Expires")} > @DateTimeUtcNow");
+            //var totalPrice = await connection.ExecuteScalarAsync<decimal>(sqlBuilder.ToSqlString(), new { UserId = user.Id, DateTimeUtcNow = DateTime.UtcNow });
 
             var userContent = await _session
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
@@ -151,26 +161,22 @@ namespace OrchardCore.SimService.SimApi
 
                 foreach (var item in orderContents)
                 {
-                    var detailPart = item.Content["OrderDetailPart"];
+                    var detailPart = item.As<OrderDetailPart>();
 
                     var price = (decimal)detailPart.Price;
 
                     totalPrice += price;
                 }
 
-                var content = userContent.Content;
-                var userPart = content["UserProfilePart"];
+                var userPart = userContent.As<UserProfilePart>();
+
                 userPart.Balance -= totalPrice;
 
                 var returnResult = new
                 {
                     userPart.Balance,
-                    userPart.FrozenBalance,
                     userPart.Email,
                     UserId = user.Id,
-                    userPart.Rating,
-                    userPart.DefaultCoutryName,
-                    userPart.DefaultOperatorName,
                 };
 
                 return Ok(returnResult);

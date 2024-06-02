@@ -306,8 +306,6 @@ namespace OrchardCore.SimService.Controllers
                 return this.ChallengeOrForbid();
             }
 
-            var token = GenerateJSONWebToken(user.UserName, user.Email);
-
             var userContent = await _session
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserName == User.Identity.Name)
@@ -336,7 +334,6 @@ namespace OrchardCore.SimService.Controllers
                     DefaultPrefix = userProfilePart.DefaultPrefix,
                     DefaultOperatorName = userProfilePart.DefaultOperatorName,
                     FrozenBalance = userProfilePart.FrozenBalance,
-                    TokenApi = token
                 };
 
                 userContent.Apply(newUserProfilePart);
