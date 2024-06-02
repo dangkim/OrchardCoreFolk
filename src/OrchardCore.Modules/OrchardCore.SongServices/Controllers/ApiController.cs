@@ -599,83 +599,83 @@ namespace OrchardCore.SongServices.Controllers
 
         }
 
-        [HttpGet]
-        [ActionName("GetUserInfo")]
-        public async Task<IActionResult> GetUserInfo()
-        {
-            Dictionary<string, decimal> dicBalance = null;
-            var traderId = "";
+        //[HttpGet]
+        //[ActionName("GetUserInfo")]
+        //public async Task<IActionResult> GetUserInfo()
+        //{
+        //    Dictionary<string, decimal> dicBalance = null;
+        //    var traderId = "";
 
-            if (!await _authorizationService.AuthorizeAsync(User, AccessApiPermissions.AccessContentApi))
-            {
-                return this.ChallengeOrForbid();
-            }
+        //    if (!await _authorizationService.AuthorizeAsync(User, AccessApiPermissions.AccessContentApi))
+        //    {
+        //        return this.ChallengeOrForbid();
+        //    }
 
-            var user = await _userManager.FindByNameAsync(User.Identity.Name) as User;
+        //    var user = await _userManager.FindByNameAsync(User.Identity.Name) as User;
 
-            if (user == null)
-            {
-                return Problem(
-                        title: S["One or more validation errors occurred."],
-                        detail: "User not found",
-                        statusCode: (int)HttpStatusCode.BadRequest);
-            }
+        //    if (user == null)
+        //    {
+        //        return Problem(
+        //                title: S["One or more validation errors occurred."],
+        //                detail: "User not found",
+        //                statusCode: (int)HttpStatusCode.BadRequest);
+        //    }
 
-            try
-            {
-                decimal btcBalanceValue = 0;
-                decimal ethBalanceValue = 0;
-                decimal usdtBalanceValue = 0;
-                decimal vndBalanceValue = 0;
+        //    try
+        //    {
+        //        decimal btcBalanceValue = 0;
+        //        decimal ethBalanceValue = 0;
+        //        decimal usdtBalanceValue = 0;
+        //        decimal vndBalanceValue = 0;
 
 
-                var currentTrader = await _session
-                .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "TraderPage" && index.Published && index.Latest)
-                .With<TraderForFilteringPartIndex>(p => p.UserId == user.Id)
-                .FirstOrDefaultAsync();
+        //        var currentTrader = await _session
+        //        .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "TraderPage" && index.Published && index.Latest)
+        //        .With<TraderForFilteringPartIndex>(p => p.UserId == user.Id)
+        //        .FirstOrDefaultAsync();
 
-                var btcBalanceString = Convert.ToString(currentTrader.Content["TraderForFilteringPart"].BTCBalance);
-                var ethBalanceString = Convert.ToString(currentTrader.Content["TraderForFilteringPart"].ETHBalance);
-                var usdtBalanceString = Convert.ToString(currentTrader.Content["TraderForFilteringPart"].USDT20Balance);
-                var vndBalanceString = Convert.ToString(currentTrader.Content["TraderForFilteringPart"].VndBalance);
-                var userName = Convert.ToString(currentTrader.Content["TraderForFilteringPart"].Name);
+        //        var btcBalanceString = Convert.ToString(currentTrader.Content["TraderForFilteringPart"].BTCBalance);
+        //        var ethBalanceString = Convert.ToString(currentTrader.Content["TraderForFilteringPart"].ETHBalance);
+        //        var usdtBalanceString = Convert.ToString(currentTrader.Content["TraderForFilteringPart"].USDT20Balance);
+        //        var vndBalanceString = Convert.ToString(currentTrader.Content["TraderForFilteringPart"].VndBalance);
+        //        var userName = Convert.ToString(currentTrader.Content["TraderForFilteringPart"].Name);
 
-                btcBalanceValue = btcBalanceString == null ? 0 : Decimal.Parse(btcBalanceString);
-                ethBalanceValue = ethBalanceString == null ? 0 : Decimal.Parse(ethBalanceString);
-                usdtBalanceValue = usdtBalanceString == null ? 0 : Decimal.Parse(usdtBalanceString);
-                vndBalanceValue = vndBalanceString == null ? 0 : Decimal.Parse(vndBalanceString);
+        //        btcBalanceValue = btcBalanceString == null ? 0 : Decimal.Parse(btcBalanceString);
+        //        ethBalanceValue = ethBalanceString == null ? 0 : Decimal.Parse(ethBalanceString);
+        //        usdtBalanceValue = usdtBalanceString == null ? 0 : Decimal.Parse(usdtBalanceString);
+        //        vndBalanceValue = vndBalanceString == null ? 0 : Decimal.Parse(vndBalanceString);
 
-                traderId = currentTrader.ContentItemId;
+        //        traderId = currentTrader.ContentItemId;
 
-                dicBalance = await ApiCommon.CalculateBalanceAsync(btcBalanceValue, ethBalanceValue, usdtBalanceValue, vndBalanceValue, user.UserName, _session);
+        //        dicBalance = await ApiCommon.CalculateBalanceAsync(btcBalanceValue, ethBalanceValue, usdtBalanceValue, vndBalanceValue, user.UserName, _session);
 
-                user.UserName = userName;
-            }
-            catch (Exception ex)
-            {
-                ex.ToString();
-                return Problem(
-                    title: S["One or more validation errors occurred."],
-                    detail: "BTC userName is not found.",
-                    statusCode: (int)HttpStatusCode.BadRequest);
-            }
+        //        user.UserName = userName;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ex.ToString();
+        //        return Problem(
+        //            title: S["One or more validation errors occurred."],
+        //            detail: "BTC userName is not found.",
+        //            statusCode: (int)HttpStatusCode.BadRequest);
+        //    }
 
-            var userInfo = new
-            {
-                user.Id,
-                user.UserName,
-                user.Email,
-                user.EmailConfirmed,
-                BalanceBTC = dicBalance == null ? "0" : String.Format("{0:F8}", dicBalance["btc"]),
-                BalanceETH = dicBalance == null ? "0" : String.Format("{0:F8}", dicBalance["eth"]),
-                BalanceUSDT20 = dicBalance == null ? "0" : String.Format("{0:F8}", dicBalance["usdt20"]),
-                BalanceVND = dicBalance == null ? "0" : String.Format("{0:F8}", dicBalance["vnd"]),
-                user.IsEnabled,
-                TraderId = traderId
-            };
+        //    var userInfo = new
+        //    {
+        //        user.Id,
+        //        user.UserName,
+        //        user.Email,
+        //        user.EmailConfirmed,
+        //        BalanceBTC = dicBalance == null ? "0" : String.Format("{0:F8}", dicBalance["btc"]),
+        //        BalanceETH = dicBalance == null ? "0" : String.Format("{0:F8}", dicBalance["eth"]),
+        //        BalanceUSDT20 = dicBalance == null ? "0" : String.Format("{0:F8}", dicBalance["usdt20"]),
+        //        BalanceVND = dicBalance == null ? "0" : String.Format("{0:F8}", dicBalance["vnd"]),
+        //        user.IsEnabled,
+        //        TraderId = traderId
+        //    };
 
-            return Ok(userInfo);
-        }
+        //    return Ok(userInfo);
+        //}
 
         [HttpPost]
         [ActionName("UpdateBalance")]

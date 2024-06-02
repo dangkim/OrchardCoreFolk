@@ -412,71 +412,7 @@ namespace OrchardCore.SimService.Controllers
                         detail: String.Join(',', ModelState.Values.FirstOrDefault().Errors.Select(e => e.ErrorMessage)),
                         statusCode: (int)HttpStatusCode.BadRequest);
 
-        }
-
-        [HttpGet]
-        [EnableCors("MyPolicy")]
-        [ActionName("GetUserInfo")]
-        public async Task<IActionResult> GetUserInfo()
-        {
-            var user = await _userManager.FindByNameAsync(User.Identity.Name) as Users.Models.User;
-
-            if (user == null)
-            {
-                return Problem(
-                        title: S["One or more validation errors occurred."],
-                        detail: "User not found",
-                        statusCode: (int)HttpStatusCode.BadRequest);
-            }
-
-            try
-            {
-                decimal btcBalanceValue = 0;
-                decimal ethBalanceValue = 0;
-                decimal usdtBalanceValue = 0;
-                decimal vndBalanceValue = 0;
-
-                using var session = _session.Store.CreateSession();
-                var traders = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.DisplayText.Contains(user.Id.ToString()) && x.ContentType == "Trader").ListAsync();
-                var currentTrader = traders.FirstOrDefault();
-
-                var btcBalanceString = Convert.ToString(currentTrader.Content["TraderForFilteringPart"].BTCBalance);
-                var ethBalanceString = Convert.ToString(currentTrader.Content["TraderForFilteringPart"].ETHBalance);
-                var usdtBalanceString = Convert.ToString(currentTrader.Content["TraderForFilteringPart"].USDT20Balance);
-                var vndBalanceString = Convert.ToString(currentTrader.Content["TraderForFilteringPart"].VndBalance);
-                var userName = Convert.ToString(currentTrader.Content["TraderForFilteringPart"].Name);
-
-                btcBalanceValue = btcBalanceString == null ? 0 : Decimal.Parse(btcBalanceString);
-                ethBalanceValue = ethBalanceString == null ? 0 : Decimal.Parse(ethBalanceString);
-                usdtBalanceValue = usdtBalanceString == null ? 0 : Decimal.Parse(usdtBalanceString);
-                vndBalanceValue = vndBalanceString == null ? 0 : Decimal.Parse(vndBalanceString);
-
-                var traderId = currentTrader.ContentItemId;
-
-                var dicBalance = await ApiCommon.CalculateBalanceAsync(btcBalanceValue, ethBalanceValue, usdtBalanceValue, vndBalanceValue, user.UserName, _session);
-
-                user.UserName = userName;
-            }
-            catch (Exception ex)
-            {
-                ex.ToString();
-                return Problem(
-                    title: S["One or more validation errors occurred."],
-                    detail: "BTC userName is not found.",
-                    statusCode: (int)HttpStatusCode.BadRequest);
-            }
-
-            var userInfo = new
-            {
-                user.Id,
-                user.UserName,
-                user.Email,
-                user.EmailConfirmed,
-                user.IsEnabled,
-            };
-
-            return Ok(userInfo);
-        }
+        }        
 
         [HttpPost]
         [ActionName("ExternalLogin")]

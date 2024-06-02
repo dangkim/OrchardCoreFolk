@@ -322,6 +322,31 @@ namespace OrchardCore.SimService.SimApi
             return Ok(results);
         }
 
+        [HttpGet]
+        [ActionName("GetUserInfo")]
+        public async Task<ActionResult<object>> GetUserInfo()
+        {
+            var user = await _userManager.GetUserAsync(User) as Users.Models.User;
+
+            if (user == null)
+            {
+                return Forbid();
+            }
+
+            if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
+            {
+                return Forbid();
+            }
+
+            var userInfo = new
+            {
+                UserId = user.Id,
+                user.Email
+            };
+
+            return userInfo;
+        }
+
         private async Task<IEnumerable<ContentItem>> FilterOrder(long userId, string category, string date, int limit, int offset, string order, string phone, bool reverse, string status)
         {
             var orderTypes = _session
