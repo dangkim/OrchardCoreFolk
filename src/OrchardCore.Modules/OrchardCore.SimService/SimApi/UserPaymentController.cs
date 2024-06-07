@@ -18,6 +18,10 @@ using CommonPermissions = OrchardCore.Contents.CommonPermissions;
 using OrchardCore.Users;
 using YesSql;
 using OrchardCore.SimService.Permissions;
+using OrchardCore.Data;
+using OrchardCore.Users.Models;
+using System.Numerics;
+using System.Linq.Expressions;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -28,6 +32,7 @@ namespace OrchardCore.SimService.SimApi
     public class UserPaymentController : Controller
     {
         private readonly ISession _session;
+        private readonly IReadOnlySession _readOnlySession;
         private readonly IContentManager _contentManager;
         private readonly UserManager<IUser> _userManager;
         private readonly IAuthorizationService _authorizationService;
@@ -35,12 +40,14 @@ namespace OrchardCore.SimService.SimApi
 
         public UserPaymentController(
             ISession session,
+            IReadOnlySession readOnlySession,
             IContentManager contentManager,
             UserManager<IUser> userManager,
             IAuthorizationService authorizationService,
             Microsoft.Extensions.Configuration.IConfiguration config)
         {
             _session = session;
+            _readOnlySession = readOnlySession;
             _contentManager = contentManager;
             _userManager = userManager;
             _authorizationService = authorizationService;
@@ -219,6 +226,70 @@ namespace OrchardCore.SimService.SimApi
             return Ok(resultType);
 
         }
+
+        public async Task<ActionResult<PaymentsHistoryDto>> GetPaymentsHistoryAsync(string date, string payment_provider, string payment_type, int limit, int offset, string order, bool reverse)
+        {
+            var user = await _userManager.GetUserAsync(User) as Users.Models.User;
+
+            if (user == null || !user.IsEnabled) return BadRequest();
+
+            if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
+            {
+                return this.ChallengeOrForbid();
+            }
+
+            var paymentTypes = _readOnlySession
+                   .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Payments" && index.Published)
+                   .With<PaymentDetailPartIndex>(p => p.UserId == user.Id)
+                   .With<PaymentDetailPartIndex>(p => p.ProviderName.Contains(payment_provider ?? ""))
+                   .With<PaymentDetailPartIndex>(p => p.TypeName.Contains(payment_type ?? ""));
+
+            if (!string.IsNullOrEmpty(date))
+            {
+                var parsedDate = DateTime.ParseExact(date, "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+
+                // Specify that the DateTime is in local time
+                var localDateTimeWithKind = DateTime.SpecifyKind(parsedDate, DateTimeKind.Local);
+
+                // Convert to UTC
+                var utcDateTime = localDateTimeWithKind.ToUniversalTime();
+
+                paymentTypes = paymentTypes
+                   .With<PaymentDetailPartIndex>(p => p.CreatedAt >= utcDateTime && p.CreatedAt <= utcDateTime.AddDays(1));
+            }
+
+            var totalRecords = await paymentTypes.CountAsync();
+
+            var sortOptions = new Dictionary<string, Expression<Func<PaymentDetailPartIndex, object>>>
+                                        {
+                                            { "id", p => p.Id },
+                                            { "balance", p => p.Balance },
+                                            { "amount", p => p.Amount },
+                                            { "created_at", p => p.CreatedAt }
+                                        };
+
+            // Default sort option
+            var sortExpression = sortOptions.ContainsKey(order.ToLower()) ? sortOptions[order.ToLower()] : sortOptions["id"];
+
+            // Apply sorting
+            var sortedPaymentTypes = reverse ? await paymentTypes.OrderByDescending(sortExpression).Skip(offset).Take(limit).ListAsync() : await paymentTypes.OrderBy(sortExpression).Skip(offset).Take(limit).ListAsync();
+
+            var data = sortedPaymentTypes.Select(p => p.As<PaymentDetailPart>());
+            var paymentProviders = data.Select(p => p.ProviderName);
+            var types = data.Select(p => p.TypeName);
+
+            var resultType = new
+            {
+                Data = data,
+                PaymentProviders = paymentProviders,
+                PaymentTypes = types,
+                Total = totalRecords
+            };
+
+            return Ok(resultType);
+
+        }
+
         #endregion
     }
 }
