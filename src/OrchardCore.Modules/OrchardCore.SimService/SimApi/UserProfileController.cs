@@ -247,7 +247,7 @@ namespace OrchardCore.SimService.SimApi
             "\nrequest.AddHeader(\"Authorization\", \"Bearer \" + token);" +
             "\nrequest.AddHeader(\"Accept\", \"application/json\");" +
             "\nvar response = await client.ExecuteGetAsync(request);")]
-        public async Task<ActionResult<OrdersHistoryDto>> OrdersRequestAsync(string category, string date, int limit, int offset, string order, string phone, bool reverse, string status, string product)
+        public async Task<ActionResult<object>> OrdersRequestAsync(string category, string date, int limit, int offset, string order, string phone, bool reverse, string status, string product)
         {
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
 
@@ -257,38 +257,38 @@ namespace OrchardCore.SimService.SimApi
                 return this.ChallengeOrForbid();
             }
 
-            IEnumerable<ContentItem> orderTypes = null;
+            //IEnumerable<ContentItem> orderTypes = null;
 
-            orderTypes = await FilterOrderHistory(user.Id, category, date, limit, offset, order, phone, reverse, status, product);
+            var returnedResult = await FilterOrderHistory(user.Id, category, date, limit, offset, order, phone, reverse, status, product);
 
-            if (orderTypes == null)
+            if (returnedResult == null)
             {
                 return Forbid();
             }
 
-            var orderValues = orderTypes.Select(i => i.As<OrderDetailPart>());
+            //var orderValues = orderTypes.Select(i => i.As<OrderDetailPart>());
 
-            var returnedResult = new
-            {
-                data = orderValues.Select(orderPart => new
-                {
-                    orderPart.InventoryId,
-                    Id = orderPart.OrderId,
-                    orderPart.Phone,
-                    orderPart.Operator,
-                    orderPart.Product,
-                    orderPart.Price,
-                    orderPart.Status,
-                    orderPart.Expires,
-                    orderPart.Created_at,
-                    orderPart.Country,
-                    orderPart.Email,
-                    orderPart.UserId,
-                    orderPart.UserName,
-                    orderPart.Category
-                }),
-                total = orderValues.Count()
-            };
+            //var returnedResult = new
+            //{
+            //    data = orderValues.Select(orderPart => new
+            //    {
+            //        orderPart.InventoryId,
+            //        Id = orderPart.OrderId,
+            //        orderPart.Phone,
+            //        orderPart.Operator,
+            //        orderPart.Product,
+            //        orderPart.Price,
+            //        orderPart.Status,
+            //        orderPart.Expires,
+            //        orderPart.Created_at,
+            //        orderPart.Country,
+            //        orderPart.Email,
+            //        orderPart.UserId,
+            //        orderPart.UserName,
+            //        orderPart.Category
+            //    }),
+            //    total = orderValues.Count()
+            //};
 
             return Ok(returnedResult);
         }
@@ -476,8 +476,10 @@ namespace OrchardCore.SimService.SimApi
             }
         }
 
-        private async Task<IEnumerable<ContentItem>> FilterOrderHistory(long userId, string category, string date, int limit, int offset, string order, string phone, bool reverse, string status, string product)
+        private async Task<object> FilterOrderHistory(long userId, string category, string date, int limit, int offset, string order, string phone, bool reverse, string status, string product)
         {
+            var totalRecords = 0;
+
             var normalizedStatus = status?.ToLower() ?? "";
 
             var orderTypes = _readOnlySession
@@ -503,6 +505,8 @@ namespace OrchardCore.SimService.SimApi
                    .With<OrderDetailPartIndex>(p => p.Created_at >= utcDateTime && p.Created_at <= utcDateTime.AddDays(1));
             }
 
+            totalRecords = await orderTypes.CountAsync();
+
             var sortOptions = new Dictionary<string, Expression<Func<OrderDetailPartIndex, object>>>
                                         {
                                             { "order_id", p => p.OrderId },
@@ -519,10 +523,34 @@ namespace OrchardCore.SimService.SimApi
             // Apply sorting
             var sortedOrderTypes = reverse ? await orderTypes.OrderByDescending(sortExpression).Skip(offset).Take(limit).ListAsync() : await orderTypes.OrderBy(sortExpression).Skip(offset).Take(limit).ListAsync();
 
+            var orderValues = sortedOrderTypes.Select(i => i.As<OrderDetailPart>());
+
+            var returnedResult = new
+            {
+                data = orderValues.Select(orderPart => new
+                {
+                    orderPart.InventoryId,
+                    Id = orderPart.OrderId,
+                    orderPart.Phone,
+                    orderPart.Operator,
+                    orderPart.Product,
+                    orderPart.Price,
+                    orderPart.Status,
+                    orderPart.Expires,
+                    orderPart.Created_at,
+                    orderPart.Country,
+                    orderPart.Email,
+                    orderPart.UserId,
+                    orderPart.UserName,
+                    orderPart.Category
+                }),
+                total = totalRecords
+            };
+
             // Apply pagination
             //sortedOrderTypes = sortedOrderTypes.Skip(offset).Take(limit);
 
-            return sortedOrderTypes;
+            return returnedResult;
         }
 
         private async Task<int> TotalFilterOrder(long userId, string date, string phone, string status)
