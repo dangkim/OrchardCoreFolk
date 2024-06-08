@@ -264,7 +264,7 @@ namespace OrchardCore.SimService.SimApi
                                     var newPaymentDetailPart = new PaymentDetailPart
                                     {
                                         PaymentId = newPaymentContent.Id,
-                                        TypeName = "Buying",
+                                        TypeName = "buying",
                                         ProviderName = resObject.Product,
                                         Amount = -frozenBalance,
                                         Balance = currentBalance,

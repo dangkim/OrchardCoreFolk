@@ -537,7 +537,7 @@ namespace OrchardCore.SimService.Controllers
                         var newPaymentDetailPart = new PaymentDetailPart
                         {
                             PaymentId = newPaymentContent.Id,
-                            TypeName = "charge",
+                            TypeName = "topup",
                             ProviderName = method,
                             Amount = amountInRub,
                             Balance = currentBalance,
@@ -638,7 +638,7 @@ namespace OrchardCore.SimService.Controllers
                         var newPaymentDetailPart = new PaymentDetailPart
                         {
                             PaymentId = newPaymentContent.Id,
-                            TypeName = "charge",
+                            TypeName = "topup",
                             ProviderName = method,
                             Amount = amountInRub,
                             Balance = currentBalance,

@@ -227,6 +227,7 @@ namespace OrchardCore.SimService.SimApi
 
         }
 
+        [ActionName("getpayments")]
         public async Task<ActionResult<PaymentsHistoryDto>> GetPaymentsHistoryAsync(string date, string payment_provider, string payment_type, int limit, int offset, string order, bool reverse)
         {
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
@@ -262,7 +263,7 @@ namespace OrchardCore.SimService.SimApi
 
             var sortOptions = new Dictionary<string, Expression<Func<PaymentDetailPartIndex, object>>>
                                         {
-                                            { "id", p => p.Id },
+                                            { "id", p => p.PaymentId },
                                             { "balance", p => p.Balance },
                                             { "amount", p => p.Amount },
                                             { "created_at", p => p.CreatedAt }
@@ -275,12 +276,12 @@ namespace OrchardCore.SimService.SimApi
             var sortedPaymentTypes = reverse ? await paymentTypes.OrderByDescending(sortExpression).Skip(offset).Take(limit).ListAsync() : await paymentTypes.OrderBy(sortExpression).Skip(offset).Take(limit).ListAsync();
 
             var data = sortedPaymentTypes.Select(p => p.As<PaymentDetailPart>());
-            var paymentProviders = data.Select(p => p.ProviderName);
-            var types = data.Select(p => p.TypeName);
+            var paymentProviders = data.Select(p => p.ProviderName).Distinct();
+            var types = data.Select(p => p.TypeName).Distinct();
 
             var resultType = new
             {
-                Data = data,
+                Data = data.Select(p => new { p.PaymentId, p.CreatedAt, p.ProviderName, p.TypeName, p.Amount }),
                 PaymentProviders = paymentProviders,
                 PaymentTypes = types,
                 Total = totalRecords
