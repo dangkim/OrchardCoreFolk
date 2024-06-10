@@ -16,6 +16,7 @@ public class OfferFilteringPartTypeBuilder : IContentTypeBuilder
     public const string PercentageFilter = "percentageOffer";
 
     public void Build(
+        ISchema schema,
         FieldType contentQuery,
         ContentTypeDefinition contentTypeDefinition,
         ContentItemType contentItemType)

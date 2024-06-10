@@ -4,7 +4,8 @@
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <!-- NuGet properties-->
     <Title>OrchardCore Song</Title>
-    <Description>$(OCFrameworkDescription) Song service
+    <Description>
+      $(OCFrameworkDescription) Song service
     </Description>
     <PackageTags>$(PackageTags) OrchardCoreFramework</PackageTags>
   </PropertyGroup>
@@ -14,12 +15,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GoogleAuthenticator" Version="3.0.0" />
-    <PackageReference Include="Lombiq.HelpfulLibraries" Version="4.6.0" />
-    <PackageReference Include="MimeKit" Version="3.4.1" />
-    <PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
-    <PackageReference Include="RestSharp" Version="108.0.3" />
-    <PackageReference Include="Telegram.Bot" Version="18.0.0" />
+    <PackageReference Include="GoogleAuthenticator" />
+    <PackageReference Include="Lombiq.HelpfulLibraries" />
+    <PackageReference Include="MimeKit" />
+    <PackageReference Include="RabbitMQ.Client" />
+    <PackageReference Include="RestSharp" />
+    <PackageReference Include="Telegram.Bot" />
   </ItemGroup>
 
   <ItemGroup>

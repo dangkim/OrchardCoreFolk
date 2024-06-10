@@ -36,7 +36,7 @@ public class SpecificationPartTypeBuilder : IContentTypeBuilder
     public const string DateTimeFilter = "date";
 
     // Here you can add arguments to every Content Type (top level) field.
-    public void Build(
+    public void Build(ISchema schema,
         FieldType contentQuery,
         ContentTypeDefinition contentTypeDefinition,
         ContentItemType contentItemType)

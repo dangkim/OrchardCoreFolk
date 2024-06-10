@@ -841,7 +841,7 @@ namespace OrchardCore.SongServices.Controllers
                 {
                     await _accountEvents.InvokeAsync((e, user, modelState) => e.LoggingInAsync(user.UserName, (key, message) => modelState.AddModelError(key, message)), user, ModelState, _logger);
 
-                    var signInResult = await ExternalLoginSignInAsync(user, info);
+                    var signInResult = await ExternalLoginSignInAsync(user as User, info);
                     if (signInResult.Succeeded)
                     {
                         return RedirectToLocal(returnUrl);
@@ -910,7 +910,7 @@ namespace OrchardCore.SongServices.Controllers
 
                                 // We have created/linked to the local user, so we must verify the login.
                                 // If it does not succeed, the user is not allowed to login
-                                var signInResult = await ExternalLoginSignInAsync(user, info);
+                                var signInResult = await ExternalLoginSignInAsync(user as User, info);
                                 if (signInResult.Succeeded)
                                 {
                                     return RedirectToLocal(returnUrl);
@@ -1027,11 +1027,16 @@ namespace OrchardCore.SongServices.Controllers
             return false;
         }
 
-        private async Task<SignInResult> ExternalLoginSignInAsync(IUser user, ExternalLoginInfo info)
+        private async Task<SignInResult> ExternalLoginSignInAsync(User user, ExternalLoginInfo info)
         {
             var claims = info.Principal.GetSerializableClaims();
             var userRoles = await _userManager.GetRolesAsync(user);
-            var context = new UpdateRolesContext(user, info.LoginProvider, claims, userRoles);
+
+            var context = new UpdateUserContext(user, "TestLoginProvider", claims, user.Properties)
+            {
+                UserClaims = user.UserClaims,
+                UserRoles = userRoles
+            };
 
             var rolesToAdd = new List<string>();
             var rolesToRemove = new List<string>();
@@ -1061,7 +1066,7 @@ namespace OrchardCore.SongServices.Controllers
                 {
                     try
                     {
-                        await item.UpdateRoles(context);
+                        await item.UpdateUserAsync(context);
                     }
                     catch (Exception ex)
                     {

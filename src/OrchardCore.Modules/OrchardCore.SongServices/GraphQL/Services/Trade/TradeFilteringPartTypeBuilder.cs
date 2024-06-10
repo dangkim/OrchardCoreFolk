@@ -28,7 +28,7 @@ public class TradeFilteringPartTypeBuilder : IContentTypeBuilder
     public const string TradeStatusFilter = "tradeStatus";
     public const string OfferIdFilter = "offerId";
 
-    public void Build(
+    public void Build(ISchema schema,
         FieldType contentQuery,
         ContentTypeDefinition contentTypeDefinition,
         ContentItemType contentItemType)

@@ -63,34 +63,27 @@ namespace OrchardCore.ContentManagement
         /// <returns>The content element instance or. <code>null</code> if it doesn't exist.</returns>
         public static ContentElement Get(this ContentElement contentElement, Type contentElementType, string name)
         {
-            try
+            if (contentElement.Elements.TryGetValue(name, out var element) &&
+                element.GetType().IsAssignableTo(contentElementType))
             {
-                if (contentElement.Elements.TryGetValue(name, out var element))
-                {
-                    return element;
-                }
-
-                var elementData = contentElement.Data[name] as JsonObject;
-                if (elementData is null)
-                {
-                    return null;
-                }
-
-                var result = (ContentElement)elementData.Deserialize(contentElementType, JOptions.Default);
-
-                result.Data = elementData;
-                result.ContentItem = contentElement.ContentItem;
-
-                contentElement.Elements[name] = result;
-
-                return result;
+                return element;
             }
-            catch (Exception ex)
+
+            var elementData = contentElement.Data[name] as JsonObject;
+
+            if (elementData is null)
             {
-                var message = ex.Message;
                 return null;
             }
-            
+
+            var result = (ContentElement)elementData.Deserialize(contentElementType, JOptions.Default);
+
+            result.Data = elementData;
+            result.ContentItem = contentElement.ContentItem;
+
+            contentElement.Elements[name] = result;
+
+            return result;
         }
 
         /// <summary>

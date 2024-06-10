@@ -28,7 +28,7 @@ public class ShowLobbyPartTypeBuilder : IContentTypeBuilder
     public const string DateFilter = "date";
 
     // Here you can add arguments to every Content Type (top level) field.
-    public void Build(
+    public void Build(ISchema schema,
         FieldType contentQuery,
         ContentTypeDefinition contentTypeDefinition,
         ContentItemType contentItemType)

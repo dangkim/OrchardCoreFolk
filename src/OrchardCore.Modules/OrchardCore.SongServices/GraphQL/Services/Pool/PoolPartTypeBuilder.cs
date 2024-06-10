@@ -18,6 +18,7 @@ public class PoolPartTypeBuilder : IContentTypeBuilder
 
     // Here you can add arguments to every Content Type (top level) field.
     public void Build(
+        ISchema schema,
         FieldType contentQuery,
         ContentTypeDefinition contentTypeDefinition,
         ContentItemType contentItemType)

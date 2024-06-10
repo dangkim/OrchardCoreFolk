@@ -5,7 +5,7 @@ using static NCrontab.CrontabSchedule;
 
 namespace OrchardCore.BackgroundTasks
 {
-    public class BackgroundTaskScheduler
+    public sealed class BackgroundTaskScheduler
     {
         private readonly IClock _clock;
 

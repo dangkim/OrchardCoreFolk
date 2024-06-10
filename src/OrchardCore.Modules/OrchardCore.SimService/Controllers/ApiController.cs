@@ -611,50 +611,6 @@ namespace OrchardCore.SimService.Controllers
             return false;
         }
 
-        private async Task<SignInResult> ExternalLoginSignInAsync(IUser user, ExternalLoginInfo info)
-        {
-            var loginResultModel = new LoginResultModel();
-
-            var claims = info.Principal.GetSerializableClaims();
-            var userRoles = await _userManager.GetRolesAsync(user);
-            var context = new UpdateRolesContext(user, info.LoginProvider, claims, userRoles);
-
-            var rolesToAdd = new List<string>();
-            var rolesToRemove = new List<string>();
-
-            var loginSettings = (await _siteService.GetSiteSettingsAsync()).As<LoginSettings>();
-
-            foreach (var item in _externalLoginHandlers)
-            {
-                try
-                {
-                    await item.UpdateRoles(context);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "{externalLoginHandler} - IExternalLoginHandler.UpdateRoles threw an exception", item.GetType());
-                }
-            }
-            rolesToAdd = context.RolesToAdd;
-            rolesToRemove = context.RolesToRemove;
-
-            await _userManager.AddToRolesAsync(user, rolesToAdd.Distinct());
-            await _userManager.RemoveFromRolesAsync(user, rolesToRemove.Distinct());
-
-            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
-
-            if (result.Succeeded)
-            {
-                var identityResult = await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
-                if (!identityResult.Succeeded)
-                {
-                    _logger.LogError("Error updating the external authentication tokens.");
-                }
-            }
-
-            return result;
-        }
-
         private async Task<string> GenerateUsernameAsync(ExternalLoginInfo info)
         {
             var ret = string.Concat("u", IdGenerator.GenerateId());

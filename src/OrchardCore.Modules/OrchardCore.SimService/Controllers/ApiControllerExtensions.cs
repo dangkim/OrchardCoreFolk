@@ -45,7 +45,7 @@ namespace OrchardCore.SimService.Controllers
                 To = email,
                 Subject = subject,
                 Body = body,
-                IsBodyHtml = true
+                IsHtmlBody = true
             };
 
             var result = await smtpService.SendAsync(message);

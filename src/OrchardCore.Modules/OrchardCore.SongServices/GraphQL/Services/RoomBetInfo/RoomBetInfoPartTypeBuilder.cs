@@ -23,6 +23,7 @@ public class RoomBetInfoPartTypeBuilder : IContentTypeBuilder
 
     // Here you can add arguments to every Content Type (top level) field.
     public void Build(
+        ISchema schema,
         FieldType contentQuery,
         ContentTypeDefinition contentTypeDefinition,
         ContentItemType contentItemType)
