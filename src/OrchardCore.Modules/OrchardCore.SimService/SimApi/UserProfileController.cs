@@ -118,12 +118,12 @@ namespace OrchardCore.SimService.SimApi
 
             if (user == null)
             {
-                return Forbid();
+                return Unauthorized();
             }
 
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {
-                return Forbid();
+                return Unauthorized();
             }
 
 

@@ -9,7 +9,7 @@ public class IdentitySettings
 
 public class IdentityUserSettings
 {
-    public const string DefaultAllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._+";
+    public const string DefaultAllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@.-_";
 
     /// <summary>
     /// The list of allowed characters in the username used to validate user names.

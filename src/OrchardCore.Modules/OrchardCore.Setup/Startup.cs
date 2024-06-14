@@ -60,7 +60,7 @@ namespace OrchardCore.Setup
 
             services.Configure<IdentityOptions>(options =>
             {
-                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._+";
+                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@.-_";
                 options.User.RequireUniqueEmail = true;
             });
         }
