@@ -131,14 +131,8 @@
     <PackageVersion Include="RabbitMQ.Client" Version="6.4.0" />
     <PackageVersion Include="Lombiq.HelpfulLibraries" Version="4.6.0" />
     <PackageVersion Include="RestSharp" Version="110.2.0" />
+	<PackageVersion Include="NSwag.AspNetCore" Version="14.0.0" />
     <PackageVersion Include="Telegram.Bot" Version="18.0.0" />
-    <PackageVersion Include="MimeKit" Version="4.6.0" />
   </ItemGroup>
-  
-  <ItemGroup>
-  <PackageVersion Include="MailKit" Version="4.6.0" />
-  <PackageVersion Include="NSwag.AspNetCore" Version="14.0.0" />
-  <PackageVersion Include="RestSharp" Version="110.2.0" />
-</ItemGroup>
 
 </Project>

@@ -9,6 +9,7 @@
       Provides Virtual Sim features for configuration, cache, bus and lock.
     </Description>
     <PackageTags>$(PackageTags) OrchardCoreFramework</PackageTags>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>

@@ -29,7 +29,7 @@ namespace OrchardCore.SongServices.Controllers
     {        
         internal static async Task<bool> SendEmailAsync(this Controller controller, string email, string subject, IShape model)
         {
-            var smtpService = controller.HttpContext.RequestServices.GetRequiredService<ISmtpService>();
+            var smtpService = controller.HttpContext.RequestServices.GetRequiredService<IEmailService>();
             var displayHelper = controller.HttpContext.RequestServices.GetRequiredService<IDisplayHelper>();
             var htmlEncoder = controller.HttpContext.RequestServices.GetRequiredService<HtmlEncoder>();
             var body = string.Empty;
