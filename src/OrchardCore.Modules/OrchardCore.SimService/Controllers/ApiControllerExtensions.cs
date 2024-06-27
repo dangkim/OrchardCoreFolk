@@ -61,7 +61,7 @@ namespace OrchardCore.SimService.Controllers
         /// <param name="confirmationEmailSubject"></param>
         /// <param name="logger"></param>
         /// <returns></returns>
-        internal static async Task<IUser> RegisterUser(this Controller controller, RegisterModel model, string confirmationEmailSubject, ILogger logger)
+        internal static async Task<IUser> RegisterUser(this Controller controller, RegisterModel model, string confirmationEmailSubject, ILogger logger, string redirectUrl = null)
         {
             var registrationEvents = controller.ControllerContext.HttpContext.RequestServices.GetRequiredService<IEnumerable<IRegistrationFormEvents>>();
             var userService = controller.ControllerContext.HttpContext.RequestServices.GetRequiredService<IUserService>();
@@ -82,7 +82,7 @@ namespace OrchardCore.SimService.Controllers
                         {
                             // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
                             // Send an email with this link
-                            //await controller.SendEmailConfirmationTokenAsync(user, confirmationEmailSubject, redirectUrl);
+                            await controller.SendEmailConfirmationTokenAsync(user, confirmationEmailSubject, redirectUrl);
                         }
                         else
                         {
@@ -193,7 +193,7 @@ namespace OrchardCore.SimService.Controllers
             var userManager = controller.ControllerContext.HttpContext.RequestServices.GetRequiredService<UserManager<IUser>>();
             var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
 
-            var callbackUrl = $"{redirectUrl}/confirm-email/{user.Id}/{HttpUtility.UrlEncode(code)}";
+            var callbackUrl = $"{redirectUrl}/confirm-email/{user.UserId}/{HttpUtility.UrlEncode(code)}";
             await SendEmailAsync(controller, user.Email, subject, new ConfirmEmailViewModel() { User = user, ConfirmEmailUrl = callbackUrl });
 
             return callbackUrl;

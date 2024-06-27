@@ -112,7 +112,7 @@ namespace OrchardCore.SimService.SimApi
             var dateFiltered = string.IsNullOrEmpty(date) ? DateTime.MinValue : DateTime.ParseExact(date, "dd-MM-yy", CultureInfo.InvariantCulture);
             // Get from PaymentDetailPart
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
-            if (user == null || !user.IsEnabled) return BadRequest();
+            if (user == null || !user.IsEnabled || !user.EmailConfirmed) return BadRequest();
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {
                 return this.ChallengeOrForbid();
@@ -232,7 +232,7 @@ namespace OrchardCore.SimService.SimApi
         {
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
 
-            if (user == null || !user.IsEnabled) return BadRequest();
+            if (user == null || !user.IsEnabled || !user.EmailConfirmed) return BadRequest();
 
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {

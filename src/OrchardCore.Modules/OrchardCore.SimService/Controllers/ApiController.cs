@@ -275,7 +275,7 @@ namespace OrchardCore.SimService.Controllers
             if (TryValidateModel(model) && ModelState.IsValid)
             {
                 var redirectUrl = _config["VxFulFrontendUrl"];
-                var iuser = await this.RegisterUser(model, S["Confirm your account"], _logger);
+                var iuser = await this.RegisterUser(model, S["Confirm your account"], _logger, redirectUrl);
                 var user = iuser as Users.Models.User;
                 // If we get a user, redirect to returnUrl
                 if (user != null)
@@ -400,7 +400,46 @@ namespace OrchardCore.SimService.Controllers
                         detail: String.Join(',', ModelState.Values.FirstOrDefault().Errors.Select(e => e.ErrorMessage)),
                         statusCode: (int)HttpStatusCode.BadRequest);
 
-        }        
+        }
+
+        [HttpGet]
+        [ActionName("ConfirmEmailSim")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ConfirmEmailSim(string userId, string code)
+        {
+            if (userId == null || code == null)
+            {
+                return RedirectToAction(nameof(this.Register), "Registration");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+
+            if (result.Succeeded)
+            {
+                var content = "<html><h2>" +
+                    S["Email confirmation"] +
+                    "</h2></html> <div><p>" +
+                    S["Thank you for confirming your email."] +
+                    $"</p><p><a href = '' >" +
+                    S["Home"] +
+                    "</a></p></div>";
+                return new ContentResult
+                {
+                    ContentType = "text/html",
+                    StatusCode = (int)HttpStatusCode.OK,
+                    Content = content
+                };
+            }
+
+            return NotFound();
+        }
 
         [HttpPost]
         [ActionName("ExternalLogin")]
@@ -661,10 +700,10 @@ namespace OrchardCore.SimService.Controllers
                 var bytes = Encoding.UTF8.GetBytes(userName); // Convert a string to a byte array
                 var base64String = Convert.ToBase64String(bytes);
 
-                return Redirect(_config["VxFulFrontendUrl"] + "?sign=" + base64String);
+                return Redirect(_config["ProxyExternalLoginUrl"] + "?sign=" + base64String);
             }
 
-            var url = _config["VxFulFrontendUrl"] + returnUrl;
+            var url = _config["ProxyExternalLoginUrl"] + returnUrl;
 
             return Redirect(url);
         }

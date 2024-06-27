@@ -113,7 +113,7 @@ namespace OrchardCore.SimService.SimApi
             var url = string.Format("user/buy/activation/{0}/{1}/{2}", country, operato, product);
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
 
-            if (user == null || !user.IsEnabled) return BadRequest();
+            if (user == null || !user.IsEnabled || !user.EmailConfirmed) return BadRequest();
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {
                 return this.ChallengeOrForbid();

@@ -123,7 +123,7 @@ namespace OrchardCore.SimService.SimApi
         public async Task<ActionResult<CheckOrderDto>> CheckOrderAsync(string id)
         {
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
-            if (user == null || !user.IsEnabled) return BadRequest();
+            if (user == null || !user.IsEnabled || !user.EmailConfirmed) return BadRequest();
 
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {
@@ -380,7 +380,7 @@ namespace OrchardCore.SimService.SimApi
         public async Task<ActionResult<CheckOrderDto>> FinishOrderAsync(string id)
         {
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
-            if (user == null || !user.IsEnabled) return BadRequest();
+            if (user == null || !user.IsEnabled || !user.EmailConfirmed || !user.EmailConfirmed) return BadRequest();
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {
                 return this.ChallengeOrForbid();
@@ -487,7 +487,7 @@ namespace OrchardCore.SimService.SimApi
         public async Task<ActionResult<CheckOrderDto>> CancelOrderAsync(string id)
         {
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
-            if (user == null || !user.IsEnabled) return BadRequest();
+            if (user == null || !user.IsEnabled || !user.EmailConfirmed) return BadRequest();
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {
                 return this.ChallengeOrForbid();
@@ -594,7 +594,7 @@ namespace OrchardCore.SimService.SimApi
         public async Task<ActionResult<CheckOrderDto>> BanOrderAsync(string id)
         {
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
-            if (user == null || !user.IsEnabled) return BadRequest();
+            if (user == null || !user.IsEnabled || !user.EmailConfirmed) return BadRequest();
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {
                 return this.ChallengeOrForbid();
@@ -701,7 +701,7 @@ namespace OrchardCore.SimService.SimApi
         public async Task<ActionResult<SmsInboxListDto>> SMSInboxListAsync(string id)
         {
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
-            if (user == null || !user.IsEnabled) return BadRequest();
+            if (user == null || !user.IsEnabled || !user.EmailConfirmed) return BadRequest();
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {
                 return this.ChallengeOrForbid();
@@ -728,7 +728,7 @@ namespace OrchardCore.SimService.SimApi
         public async Task<ActionResult<List<CheckOrderDto>>> GetStableOrderByProductAndCountryAsync(string id, string product, string country)
         {
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
-            if (user == null || !user.IsEnabled) return BadRequest();
+            if (user == null || !user.IsEnabled || !user.EmailConfirmed) return BadRequest();
 
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {

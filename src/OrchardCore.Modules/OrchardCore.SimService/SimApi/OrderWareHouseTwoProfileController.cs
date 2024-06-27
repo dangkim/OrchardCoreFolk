@@ -101,7 +101,7 @@ namespace OrchardCore.SimService.SimApi
         {
             // check orderId from 5sim with OrderDetailPart
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
-            if (user == null || !user.IsEnabled) return BadRequest();
+            if (user == null || !user.IsEnabled || !user.EmailConfirmed) return BadRequest();
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {
                 return this.ChallengeOrForbid();

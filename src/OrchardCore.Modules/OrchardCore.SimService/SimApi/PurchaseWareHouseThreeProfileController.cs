@@ -103,7 +103,7 @@ namespace OrchardCore.SimService.SimApi
         {
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
             
-            if (user == null || !user.IsEnabled) return BadRequest();
+            if (user == null || !user.IsEnabled || !user.EmailConfirmed) return BadRequest();
 
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {
@@ -132,7 +132,7 @@ namespace OrchardCore.SimService.SimApi
                 url = string.Format("https://chothuesimcode.com/api?act=number&apik={0}&appId={1}&carrier={2}", cSimToken, product, operato);
             }
 
-            if (user == null || !user.IsEnabled) return BadRequest();
+            if (user == null || !user.IsEnabled || !user.EmailConfirmed) return BadRequest();
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {
                 return this.ChallengeOrForbid();
@@ -290,7 +290,7 @@ namespace OrchardCore.SimService.SimApi
 
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
 
-            if (user == null || !user.IsEnabled) return BadRequest();
+            if (user == null || !user.IsEnabled || !user.EmailConfirmed) return BadRequest();
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {
                 return this.ChallengeOrForbid();

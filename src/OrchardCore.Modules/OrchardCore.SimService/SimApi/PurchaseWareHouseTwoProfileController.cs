@@ -108,7 +108,7 @@ namespace OrchardCore.SimService.SimApi
             var url = string.Format("https://2ndline.io/apiv1/order?apikey={0}&serviceId={1}&countryId={2}&operatorId={3}", twoLineSimToken, service, country, operato);
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
 
-            if (user == null || !user.IsEnabled) return BadRequest();
+            if (user == null || !user.IsEnabled || !user.EmailConfirmed) return BadRequest();
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {
                 return this.ChallengeOrForbid();
@@ -245,7 +245,7 @@ namespace OrchardCore.SimService.SimApi
 
             var user = await _userManager.GetUserAsync(User) as Users.Models.User;
 
-            if (user == null || !user.IsEnabled) return BadRequest();
+            if (user == null || !user.IsEnabled || !user.EmailConfirmed) return BadRequest();
             if (!await _authorizationService.AuthorizeAsync(User, SimApiPermissions.AccessContentApi))
             {
                 return this.ChallengeOrForbid();
