@@ -136,7 +136,11 @@ namespace OrchardCore.SimService.SimApi
 
                 if (currentBalance <= 0)
                 {
-                    return Ok(new ErrorModel { Error = "no balance" });
+                    return Ok(new ReturnModel
+                    {
+                        Error = "no balance",
+                        ErrorCode = (int)PurchaseProfileErrorCode.NoBalance,
+                    });
                 }
 
                 var newOrderContent = await _contentManager.NewAsync("Orders");

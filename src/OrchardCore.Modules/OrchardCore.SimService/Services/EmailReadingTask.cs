@@ -90,44 +90,44 @@ namespace OrchardCore.SimService.Services
 
                         var readableText = email.TextBody;
 
-                        var userId = -1;
+                        var userId = -1L;
 
                         _logger.LogError("-----------------check isVCB----------------------");
                         var isVCB = subject.Contains("[SMSForwarder] New message from Vietcombank");
-                        //var isTCB = subject.Contains("[SMSForwarder] New message from Techcombank");
 
-                        //if (isVCB || isTCB)
                         if (isVCB)
                         {
-                            //READ MAIL BODY-------------------------------------------------------------------------------------
+                            // READ MAIL BODY-------------------------------------------------------------------------------------
                             _logger.LogError("-----------------READ MAIL BODY----------------------");
 
 
                             if (!string.IsNullOrEmpty(readableText))
                             {
                                 _logger.LogError("-----------------READ CTS----------------------");
-                                var firstIndex = readableText.IndexOf("CTS");
-                                var lastIndex = readableText.LastIndexOf("CTS");
+                                var firstIndex = readableText.IndexOf("SM"); // start message
+                                var lastIndex = readableText.LastIndexOf("EM"); // end message
                                 if (firstIndex != -1 && lastIndex != -1)
                                 {
-                                    //MESSAGE MARKS AS READ AFTER READING MESSAGE
+                                    // MESSAGE MARKS AS READ AFTER READING MESSAGE
                                     await inbox.AddFlagsAsync(message.UniqueId, MessageFlags.Seen, true, cancellationToken);
                                     var firstIndexOfZ = firstIndex + 2;
-                                    userId = Int32.Parse(readableText.Substring(firstIndexOfZ + 1, lastIndex - (firstIndexOfZ + 1)));
+                                    //userId = int.Parse(readableText.Substring(firstIndexOfZ + 1, lastIndex - (firstIndexOfZ + 1)));
+                                    var userIdBefore = readableText.Substring(firstIndexOfZ + 1, lastIndex - (firstIndexOfZ + 1));
+                                    userId = ReplaceLettersWithDigits(userIdBefore);
                                 }
 
                                 if (userId != -1)
                                 {
                                     var firstIndexOfPlus = readableText.IndexOf('+');
-                                    StringBuilder stringBuilder = new StringBuilder();
+                                    var stringBuilder = new StringBuilder();
 
-                                    for (int i = firstIndexOfPlus + 1; i < readableText.Length - (firstIndexOfPlus + 1); i++)
+                                    for (var i = firstIndexOfPlus + 1; i < readableText.Length - (firstIndexOfPlus + 1); i++)
                                     {
-                                        if (Char.IsNumber(readableText[i]))
+                                        if (char.IsNumber(readableText[i]))
                                         {
                                             stringBuilder.Append(readableText[i]);
                                         }
-                                        else if (readableText[i] != ',' && !Char.IsNumber(readableText[i]))
+                                        else if (readableText[i] != ',' && !char.IsNumber(readableText[i]))
                                         {
                                             break;
                                         }
@@ -136,7 +136,7 @@ namespace OrchardCore.SimService.Services
                                     if (stringBuilder.Length > 0)
                                     {
                                         // Update Balance should come along with an id of email
-                                        var amount = Decimal.Parse(stringBuilder.ToString());
+                                        var amount = decimal.Parse(stringBuilder.ToString());
 
                                         var amountInUsd = amount * vndRateDouble;
 
@@ -164,8 +164,7 @@ namespace OrchardCore.SimService.Services
             return;
         }
 
-
-        private async Task<bool> UpdateSixSimBalanceByBankAsync(IContentManager _contentManager, ISession session, decimal originalAmount, decimal amount, string currency, decimal rateInUsd, int userId, string gmailMsgId, bool isVCB = false)
+        private async Task<bool> UpdateSixSimBalanceByBankAsync(IContentManager _contentManager, ISession session, decimal originalAmount, decimal amount, string currency, decimal rateInUsd, long userId, string gmailMsgId, bool isVCB = false)
         {
             _logger.LogError("-----------------UpdateSixSimBalanceByBankAsync----------------------");
             try
@@ -262,6 +261,41 @@ namespace OrchardCore.SimService.Services
             {
                 throw;
             }
+        }
+
+        private static long ReplaceLettersWithDigits(string input)
+        {
+            // Define the reverse mapping from letters to digits using a dictionary
+            var mapping = new Dictionary<char, char>
+                            {
+                                { 'A', '0' },
+                                { 'B', '1' },
+                                { 'C', '2' },
+                                { 'D', '3' },
+                                { 'E', '4' },
+                                { 'F', '5' },
+                                { 'G', '6' },
+                                { 'H', '7' },
+                                { 'I', '8' },
+                                { 'K', '9' }
+                            };
+
+            // Use a char array to construct the result string
+            var result = new char[input.Length];
+            for (var i = 0; i < input.Length; i++)
+            {
+                if (mapping.TryGetValue(input[i], out var digit))
+                {
+                    result[i] = digit;
+                }
+                else
+                {
+                    throw new ArgumentException("Input contains invalid characters.");
+                }
+            }
+
+            // Convert the resulting char array to a string and then to a long
+            return long.Parse(new string(result));
         }
     }
 }

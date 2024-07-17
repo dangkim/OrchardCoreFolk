@@ -68,31 +68,28 @@ namespace OrchardCore.SimService.Controllers
             var settings = (await controller.ControllerContext.HttpContext.RequestServices.GetRequiredService<ISiteService>().GetSiteSettingsAsync()).As<RegistrationSettings>();
             var signInManager = controller.ControllerContext.HttpContext.RequestServices.GetRequiredService<SignInManager<IUser>>();
 
-            if (settings.UsersCanRegister != UserRegistrationType.NoRegistration)
+            await registrationEvents.InvokeAsync((e, modelState) => e.RegistrationValidationAsync((key, message) => modelState.AddModelError(key, message)), controller.ModelState, logger);
+
+            if (controller.ModelState.IsValid)
             {
-                await registrationEvents.InvokeAsync((e, modelState) => e.RegistrationValidationAsync((key, message) => modelState.AddModelError(key, message)), controller.ModelState, logger);
+                var user = await userService.CreateUserAsync(new User { UserName = model.Email, Email = model.Email, EmailConfirmed = !settings.UsersMustValidateEmail, RoleNames = ["NormalUser"] }, model.Password, (key, message) => controller.ModelState.AddModelError(key, message)) as User;
 
-                if (controller.ModelState.IsValid)
+                if (user != null && controller.ModelState.IsValid)
                 {
-                    var user = await userService.CreateUserAsync(new User { UserName = model.Email, Email = model.Email, EmailConfirmed = !settings.UsersMustValidateEmail, RoleNames = ["NormalUser"] }, model.Password, (key, message) => controller.ModelState.AddModelError(key, message)) as User;
-
-                    if (user != null && controller.ModelState.IsValid)
+                    if (settings.UsersMustValidateEmail)
                     {
-                        if (settings.UsersMustValidateEmail)
-                        {
-                            // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
-                            // Send an email with this link
-                            await controller.SendEmailConfirmationTokenAsync(user, confirmationEmailSubject, redirectUrl);
-                        }
-                        else
-                        {
-                            await signInManager.SignInAsync(user, isPersistent: false);
-                        }
-                        logger.LogInformation(3, "User created a new account with password.");
-                        registrationEvents.Invoke((e, user) => e.RegisteredAsync(user), user, logger);
-
-                        return user;
+                        // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
+                        // Send an email with this link
+                        await controller.SendEmailConfirmationTokenAsync(user, confirmationEmailSubject, redirectUrl);
                     }
+                    else
+                    {
+                        await signInManager.SignInAsync(user, isPersistent: false);
+                    }
+                    logger.LogInformation(3, "User created a new account with password.");
+                    registrationEvents.Invoke((e, user) => e.RegisteredAsync(user), user, logger);
+
+                    return user;
                 }
             }
             return null;
@@ -115,9 +112,9 @@ namespace OrchardCore.SimService.Controllers
                     {
                         //if (settings.UsersMustValidateEmail)
                         //{
-                            // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
-                            // Send an email with this link
-                            await controller.SendEmailForgetPasswordTokenAsync(user, confirmationEmailSubject, redirectUrl);
+                        // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
+                        // Send an email with this link
+                        await controller.SendEmailForgetPasswordTokenAsync(user, confirmationEmailSubject, redirectUrl);
                         //}
 
                         logger.LogInformation(3, "User recovers a password.");
@@ -138,41 +135,25 @@ namespace OrchardCore.SimService.Controllers
         /// <param name="confirmationEmailSubject"></param>
         /// <param name="logger"></param>
         /// <returns></returns>
-        internal static async Task<IUser> RegisterUser(this Controller controller, RegisterViewModel model, string confirmationEmailSubject, ILogger logger)
+        internal static async Task<IUser> RegisterGoogleUser(this Controller controller, RegisterViewModel model, string confirmationEmailSubject, ILogger logger)
         {
             var registrationEvents = controller.ControllerContext.HttpContext.RequestServices.GetRequiredService<IEnumerable<IRegistrationFormEvents>>();
             var userService = controller.ControllerContext.HttpContext.RequestServices.GetRequiredService<IUserService>();
             var settings = (await controller.ControllerContext.HttpContext.RequestServices.GetRequiredService<ISiteService>().GetSiteSettingsAsync()).As<RegistrationSettings>();
             var signInManager = controller.ControllerContext.HttpContext.RequestServices.GetRequiredService<SignInManager<IUser>>();
 
-            if (settings.UsersCanRegister != UserRegistrationType.NoRegistration)
+            await registrationEvents.InvokeAsync((e, modelState) => e.RegistrationValidationAsync((key, message) => modelState.AddModelError(key, message)), controller.ModelState, logger);
+
+            if (controller.ModelState.IsValid)
             {
-                await registrationEvents.InvokeAsync((e, modelState) => e.RegistrationValidationAsync((key, message) => modelState.AddModelError(key, message)), controller.ModelState, logger);
+                var user = await userService.CreateUserAsync(new User { UserName = model.UserName, Email = model.Email, EmailConfirmed = true, RoleNames = ["NormalUser"] }, model.Password, (key, message) => controller.ModelState.AddModelError(key, message)) as User;
 
-                if (controller.ModelState.IsValid)
+                if (user != null && controller.ModelState.IsValid)
                 {
-                    //var user = await userService.CreateUserAsync(new User { UserName = model.UserName, Email = model.Email, EmailConfirmed = !settings.UsersMustValidateEmail }, model.Password, (key, message) => controller.ModelState.AddModelError(key, message)) as User;
+                    logger.LogInformation(3, "User created a new account with password.");
+                    registrationEvents.Invoke((e, user) => e.RegisteredAsync(user), user, logger);
 
-                    var user = await userService.CreateUserAsync(new User { UserName = model.UserName, Email = model.Email, EmailConfirmed = !settings.UsersMustValidateEmail, RoleNames = ["NormalUser"] }, model.Password, (key, message) => controller.ModelState.AddModelError(key, message)) as User;
-
-
-                    if (user != null && controller.ModelState.IsValid)
-                    {
-                        //if (settings.UsersMustValidateEmail)
-                        //{
-                        //    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
-                        //    // Send an email with this link
-                        //    await controller.SendEmailConfirmationTokenAsync(user, confirmationEmailSubject);
-                        //}
-                        //else
-                        //{
-                        //    await signInManager.SignInAsync(user, isPersistent: false);
-                        //}
-                        logger.LogInformation(3, "User created a new account with password.");
-                        registrationEvents.Invoke((e, user) => e.RegisteredAsync(user), user, logger);
-
-                        return user;
-                    }
+                    return user;
                 }
             }
             return null;

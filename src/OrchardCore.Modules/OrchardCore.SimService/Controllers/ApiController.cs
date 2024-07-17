@@ -44,6 +44,7 @@ using Microsoft.AspNetCore.Authentication;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System.Text.Json;
 using System.Text;
+using static GraphQL.Validation.Rules.OverlappingFieldsCanBeMerged;
 
 namespace OrchardCore.SimService.Controllers
 {
@@ -289,7 +290,7 @@ namespace OrchardCore.SimService.Controllers
                     var userProfilePart = new UserProfilePart()
                     {
                         Email = model.Email,
-                        UserId = (user as Users.Models.User).Id,
+                        UserId = user.Id,
                         UserName = user.UserName,
                         Balance = 0m,
                     };
@@ -445,11 +446,11 @@ namespace OrchardCore.SimService.Controllers
         [ActionName("ExternalLogin")]
         [EnableCors("MyPolicy")]
         [AllowAnonymous]
-        public IActionResult ExternalLogin(string provider, string email, string password, string returnUrl = null)
+        public IActionResult ExternalLogin(string provider, string returnUrl = null)
         {
             // Request a redirect to the external login provider.
             _logger.LogError("Go to ExternalLogin");
-            var redirectUrl = _config["PaxHubUrl"] + "/" + nameof(ExternalLoginCallback) + "?returnUrl=" + returnUrl;
+            var redirectUrl = _config["ProxyExternalLoginCallBackUrl"] + returnUrl;
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return Challenge(properties, provider);
         }
@@ -537,7 +538,7 @@ namespace OrchardCore.SimService.Controllers
                     ViewData["UserName"] = user.UserName;
                     ViewData["Email"] = email;
 
-                    // Should go to the home page of Sixsim
+                    // Should go to the home page of client website
                     return RedirectToLocal(returnUrl, user.UserName, email, true);
                 }
                 else
@@ -561,7 +562,7 @@ namespace OrchardCore.SimService.Controllers
                         externalLoginViewModel.UserName = await GenerateUsernameAsync(info);
                         externalLoginViewModel.Email = email;
 
-                        user = await this.RegisterUser(new RegisterViewModel()
+                        user = await this.RegisterGoogleUser(new RegisterViewModel()
                         {
                             UserName = externalLoginViewModel.UserName,
                             Email = externalLoginViewModel.Email,
@@ -592,7 +593,7 @@ namespace OrchardCore.SimService.Controllers
                             var userProfilePart = new UserProfilePart()
                             {
                                 Email = email,
-                                UserId = (user as Users.Models.User).Id,
+                                UserId = (user as User).Id,
                                 UserName = user.UserName,
                                 Vendor = "demo",
                                 DefaultForwardingNumber = "",
@@ -623,6 +624,162 @@ namespace OrchardCore.SimService.Controllers
             }
 
             return RedirectToLocal(returnUrl);
+        }
+
+        [HttpGet]
+        [ActionName("ExternalLoginCallback")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ExternalLoginCallback(string remoteError = null)
+        {
+            _logger.LogError("ExternalLoginCallback");
+            var url = _config["ProxyExternalLoginUrl"];
+            if (remoteError != null)
+            {
+                _logger.LogError("Error from external provider: {Error}", remoteError);
+
+                return Ok(new ReturnModel
+                {
+                    Error = "Error from external provider",
+                    ErrorCode = (int)GoogleLoginErrorCode.ErrorFromExternal,
+                });
+            }
+
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                _logger.LogError("Could not get external login info.");
+
+                return Ok(new ReturnModel
+                {
+                    Error = "Could not get external login info",
+                    ErrorCode = (int)GoogleLoginErrorCode.CouldNotGetExternalLoginInfo,
+                });
+            }
+
+            var registrationSettings = (await _siteService.GetSiteSettingsAsync()).As<RegistrationSettings>();
+            var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+
+            if (user != null)
+            {
+                await _accountEvents.InvokeAsync((e, user, modelState) => e.LoggingInAsync(user.UserName, (key, message) => modelState.AddModelError(key, message)), user, ModelState, _logger);
+                var localEmail = info.Principal.FindFirstValue(ClaimTypes.Email) ?? info.Principal.FindFirstValue("email");
+
+                var identityResult = await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
+                if (!identityResult.Succeeded)
+                {
+                    _logger.LogError("Error updating the external authentication tokens.");
+                }
+                else
+                {
+                    return Ok(new ReturnModel
+                    {
+                        Error = "No Error",
+                        ErrorCode = (int)GoogleLoginErrorCode.Success,
+                        Value = user.UserName
+                    });
+                }
+            }
+            else
+            {
+                var email = info.Principal.FindFirstValue(ClaimTypes.Email) ?? info.Principal.FindFirstValue("email");
+
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    user = await _userManager.FindByEmailAsync(email);
+                }
+
+                if (user != null)
+                {
+                    return Ok(new ReturnModel
+                    {
+                        Error = "No Error",
+                        ErrorCode = (int)GoogleLoginErrorCode.Success,
+                        Value = user.UserName,
+                    });
+                }
+                else
+                {
+                    var externalLoginViewModel = new RegisterExternalLoginViewModel
+                    {
+                        NoPassword = registrationSettings.NoPasswordForExternalUsers,
+                        NoEmail = registrationSettings.NoEmailForExternalUsers,
+                        NoUsername = registrationSettings.NoUsernameForExternalUsers,
+
+                        // If registrationSettings.NoUsernameForExternalUsers is true, this username will not be used
+                        UserName = await GenerateUsernameAsync(info),
+                        Email = email
+                    };
+
+                    user = await this.RegisterGoogleUser(new RegisterViewModel()
+                    {
+                        UserName = externalLoginViewModel.UserName,
+                        Email = externalLoginViewModel.Email,
+                        Password = externalLoginViewModel.UserName + "A@",
+                        ConfirmPassword = externalLoginViewModel.UserName + "A@",
+                    }, S["Confirm your account"], _logger);
+
+                    if (user == null || user is not User u)
+                    {
+                        _logger.LogError("Unable to load user with ID '{UserId}'.", _userManager.GetUserId(User));
+
+                        return Ok(new ReturnModel
+                        {
+                            Error = $"Unable to load user with ID '{_userManager.GetUserId(User)}'.",
+                            ErrorCode = (int)GoogleLoginErrorCode.UnableToLoadUser,
+                        });
+                    }
+
+                    // If the registration was successful we can link the external provider and redirect the user
+                    if (user != null)
+                    {
+                        var time = BitConverter.GetBytes(DateTime.UtcNow.ToBinary());
+                        var key = Guid.NewGuid().ToByteArray();
+                        var token = Convert.ToBase64String(time.Concat(key).ToArray());
+
+                        // Create UserProfile/Part
+                        var newContentItem = await _contentManager.NewAsync("UserProfile");
+
+                        newContentItem.Owner = user.UserName;
+                        newContentItem.Author = user.UserName;
+
+                        var userProfilePart = new UserProfilePart()
+                        {
+                            Email = email,
+                            UserId = (user as User).Id,
+                            UserName = user.UserName,
+                            Vendor = "demo",
+                            DefaultForwardingNumber = "",
+                            Balance = 0m,
+                            Rating = 96,
+                            DefaultCoutryName = "vietnam",
+                            DefaultIso = "vn",
+                            DefaultPrefix = "+84",
+                            DefaultOperatorName = "virtual16",
+                            FrozenBalance = 0m,
+                            TokenApi = ""
+                        };
+
+                        newContentItem.Apply(userProfilePart);
+                        var createdResult = await _contentManager.UpdateValidateAndCreateAsync(newContentItem, VersionOptions.Published);
+
+                        if (createdResult.Succeeded)
+                        {
+                            return Ok(new ReturnModel
+                            {
+                                Error = "No Error",
+                                ErrorCode = (int)GoogleLoginErrorCode.Success,
+                                Value = externalLoginViewModel.UserName,
+                            });
+                        }
+                    }
+                }
+            }
+
+            return Ok(new ReturnModel
+            {
+                Error = "Could not create userProfilePart",
+                ErrorCode = (int)GoogleLoginErrorCode.CouldNotCreateUserProfilePart,
+            });
         }
 
         private static bool IsEmail(string str)
@@ -720,6 +877,5 @@ namespace OrchardCore.SimService.Controllers
 
             return settings;
         }
-
     }
 }
