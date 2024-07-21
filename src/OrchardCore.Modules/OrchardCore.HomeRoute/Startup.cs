@@ -21,7 +21,7 @@ namespace OrchardCore.HomeRoute
 
         public override void Configure(IApplicationBuilder app, IEndpointRouteBuilder routes, IServiceProvider serviceProvider)
         {
-            routes.MapDynamicControllerRoute<HomeRouteTransformer>("/");
+            routes.MapDynamicControllerRoute<HomeRouteTransformer>("/aa");
         }
     }
 }

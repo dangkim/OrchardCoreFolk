@@ -450,7 +450,7 @@ namespace OrchardCore.SimService.Controllers
         {
             // Request a redirect to the external login provider.
             _logger.LogError("Go to ExternalLogin");
-            var redirectUrl = _config["ProxyExternalLoginCallBackUrl"] + returnUrl;
+            var redirectUrl = _config["PaxHubUrl"] + "/" + nameof(ExternalLoginCallback);
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return Challenge(properties, provider);
         }
@@ -484,147 +484,147 @@ namespace OrchardCore.SimService.Controllers
             return Ok(user);
         }
 
-        [HttpGet]
-        [ActionName("ExternalLoginCallback")]
-        [AllowAnonymous]
-        public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
-        {
-            _logger.LogError("ExternalLoginCallback");
-            if (remoteError != null)
-            {
-                _logger.LogError("Error from external provider: {Error}", remoteError);
-                return RedirectToLocal(returnUrl);
-            }
+        //[HttpGet]
+        //[ActionName("ExternalLoginCallback")]
+        //[AllowAnonymous]
+        //public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
+        //{
+        //    _logger.LogError("ExternalLoginCallback");
+        //    if (remoteError != null)
+        //    {
+        //        _logger.LogError("Error from external provider: {Error}", remoteError);
+        //        return RedirectToLocal(returnUrl);
+        //    }
 
-            var info = await _signInManager.GetExternalLoginInfoAsync();
-            if (info == null)
-            {
-                _logger.LogError("Could not get external login info.");
-                return RedirectToLocal(returnUrl);
-            }
+        //    var info = await _signInManager.GetExternalLoginInfoAsync();
+        //    if (info == null)
+        //    {
+        //        _logger.LogError("Could not get external login info.");
+        //        return RedirectToLocal(returnUrl);
+        //    }
 
-            var registrationSettings = (await _siteService.GetSiteSettingsAsync()).As<RegistrationSettings>();
-            var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+        //    var registrationSettings = (await _siteService.GetSiteSettingsAsync()).As<RegistrationSettings>();
+        //    var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
 
-            if (user != null)
-            {
-                await _accountEvents.InvokeAsync((e, user, modelState) => e.LoggingInAsync(user.UserName, (key, message) => modelState.AddModelError(key, message)), user, ModelState, _logger);
-                var localEmail = info.Principal.FindFirstValue(ClaimTypes.Email) ?? info.Principal.FindFirstValue("email");
+        //    if (user != null)
+        //    {
+        //        await _accountEvents.InvokeAsync((e, user, modelState) => e.LoggingInAsync(user.UserName, (key, message) => modelState.AddModelError(key, message)), user, ModelState, _logger);
+        //        var localEmail = info.Principal.FindFirstValue(ClaimTypes.Email) ?? info.Principal.FindFirstValue("email");
 
-                var identityResult = await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
-                if (!identityResult.Succeeded)
-                {
-                    _logger.LogError("Error updating the external authentication tokens.");
-                }
-                else
-                {
-                    return RedirectToLocal(returnUrl, user.UserName, localEmail, true);
+        //        var identityResult = await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
+        //        if (!identityResult.Succeeded)
+        //        {
+        //            _logger.LogError("Error updating the external authentication tokens.");
+        //        }
+        //        else
+        //        {
+        //            return RedirectToLocal(returnUrl, user.UserName, localEmail, true);
 
-                }
-            }
-            else
-            {
-                var email = info.Principal.FindFirstValue(ClaimTypes.Email) ?? info.Principal.FindFirstValue("email");
+        //        }
+        //    }
+        //    else
+        //    {
+        //        var email = info.Principal.FindFirstValue(ClaimTypes.Email) ?? info.Principal.FindFirstValue("email");
 
-                if (!string.IsNullOrWhiteSpace(email))
-                    user = await _userManager.FindByEmailAsync(email);
+        //        if (!string.IsNullOrWhiteSpace(email))
+        //            user = await _userManager.FindByEmailAsync(email);
 
-                ViewData["ReturnUrl"] = returnUrl;
-                ViewData["LoginProvider"] = info.LoginProvider;
+        //        ViewData["ReturnUrl"] = returnUrl;
+        //        ViewData["LoginProvider"] = info.LoginProvider;
 
-                if (user != null)
-                {
-                    // Link external login to an existing user
-                    ViewData["UserName"] = user.UserName;
-                    ViewData["Email"] = email;
+        //        if (user != null)
+        //        {
+        //            // Link external login to an existing user
+        //            ViewData["UserName"] = user.UserName;
+        //            ViewData["Email"] = email;
 
-                    // Should go to the home page of client website
-                    return RedirectToLocal(returnUrl, user.UserName, email, true);
-                }
-                else
-                {
-                    // no user could be matched, check if a new user can register
-                    if (registrationSettings.UsersCanRegister == UserRegistrationType.NoRegistration)
-                    {
-                        string message = S["Site does not allow user registration."];
-                        _logger.LogWarning("{Message}", message);
-                        ModelState.AddModelError("", message);
-                    }
-                    else
-                    {
-                        var externalLoginViewModel = new RegisterExternalLoginViewModel();
+        //            // Should go to the home page of client website
+        //            return RedirectToLocal(returnUrl, user.UserName, email, true);
+        //        }
+        //        else
+        //        {
+        //            // no user could be matched, check if a new user can register
+        //            if (registrationSettings.UsersCanRegister == UserRegistrationType.NoRegistration)
+        //            {
+        //                string message = S["Site does not allow user registration."];
+        //                _logger.LogWarning("{Message}", message);
+        //                ModelState.AddModelError("", message);
+        //            }
+        //            else
+        //            {
+        //                var externalLoginViewModel = new RegisterExternalLoginViewModel();
 
-                        externalLoginViewModel.NoPassword = registrationSettings.NoPasswordForExternalUsers;
-                        externalLoginViewModel.NoEmail = registrationSettings.NoEmailForExternalUsers;
-                        externalLoginViewModel.NoUsername = registrationSettings.NoUsernameForExternalUsers;
+        //                externalLoginViewModel.NoPassword = registrationSettings.NoPasswordForExternalUsers;
+        //                externalLoginViewModel.NoEmail = registrationSettings.NoEmailForExternalUsers;
+        //                externalLoginViewModel.NoUsername = registrationSettings.NoUsernameForExternalUsers;
 
-                        // If registrationSettings.NoUsernameForExternalUsers is true, this username will not be used
-                        externalLoginViewModel.UserName = await GenerateUsernameAsync(info);
-                        externalLoginViewModel.Email = email;
+        //                // If registrationSettings.NoUsernameForExternalUsers is true, this username will not be used
+        //                externalLoginViewModel.UserName = await GenerateUsernameAsync(info);
+        //                externalLoginViewModel.Email = email;
 
-                        user = await this.RegisterGoogleUser(new RegisterViewModel()
-                        {
-                            UserName = externalLoginViewModel.UserName,
-                            Email = externalLoginViewModel.Email,
-                            Password = externalLoginViewModel.UserName + "A@",
-                            ConfirmPassword = externalLoginViewModel.UserName + "A@",
-                        }, S["Confirm your account"], _logger);
+        //                user = await this.RegisterGoogleUser(new RegisterViewModel()
+        //                {
+        //                    UserName = externalLoginViewModel.UserName,
+        //                    Email = externalLoginViewModel.Email,
+        //                    Password = externalLoginViewModel.UserName + "A@",
+        //                    ConfirmPassword = externalLoginViewModel.UserName + "A@",
+        //                }, S["Confirm your account"], _logger);
 
-                        if (user == null || user is not User u)
-                        {
-                            _logger.LogError("Unable to load user with ID '{UserId}'.", _userManager.GetUserId(User));
+        //                if (user == null || user is not User u)
+        //                {
+        //                    _logger.LogError("Unable to load user with ID '{UserId}'.", _userManager.GetUserId(User));
 
-                            return RedirectToAction(returnUrl);
-                        }
+        //                    return RedirectToAction(returnUrl);
+        //                }
 
-                        // If the registration was successful we can link the external provider and redirect the user
-                        if (user != null)
-                        {
-                            var time = BitConverter.GetBytes(DateTime.UtcNow.ToBinary());
-                            var key = Guid.NewGuid().ToByteArray();
-                            var token = Convert.ToBase64String(time.Concat(key).ToArray());
+        //                // If the registration was successful we can link the external provider and redirect the user
+        //                if (user != null)
+        //                {
+        //                    var time = BitConverter.GetBytes(DateTime.UtcNow.ToBinary());
+        //                    var key = Guid.NewGuid().ToByteArray();
+        //                    var token = Convert.ToBase64String(time.Concat(key).ToArray());
 
-                            // Create UserProfile/Part
-                            var newContentItem = await _contentManager.NewAsync("UserProfile");
+        //                    // Create UserProfile/Part
+        //                    var newContentItem = await _contentManager.NewAsync("UserProfile");
 
-                            newContentItem.Owner = user.UserName;
-                            newContentItem.Author = user.UserName;
+        //                    newContentItem.Owner = user.UserName;
+        //                    newContentItem.Author = user.UserName;
 
-                            var userProfilePart = new UserProfilePart()
-                            {
-                                Email = email,
-                                UserId = (user as User).Id,
-                                UserName = user.UserName,
-                                Vendor = "demo",
-                                DefaultForwardingNumber = "",
-                                Balance = 0m,
-                                Rating = 96,
-                                DefaultCoutryName = "vietnam",
-                                DefaultIso = "vn",
-                                DefaultPrefix = "+84",
-                                DefaultOperatorName = "virtual16",
-                                FrozenBalance = 0m,
-                                TokenApi = ""
-                            };
+        //                    var userProfilePart = new UserProfilePart()
+        //                    {
+        //                        Email = email,
+        //                        UserId = (user as User).Id,
+        //                        UserName = user.UserName,
+        //                        Vendor = "demo",
+        //                        DefaultForwardingNumber = "",
+        //                        Balance = 0m,
+        //                        Rating = 96,
+        //                        DefaultCoutryName = "vietnam",
+        //                        DefaultIso = "vn",
+        //                        DefaultPrefix = "+84",
+        //                        DefaultOperatorName = "virtual16",
+        //                        FrozenBalance = 0m,
+        //                        TokenApi = ""
+        //                    };
 
-                            newContentItem.Apply(userProfilePart);
-                            var createdResult = await _contentManager.UpdateValidateAndCreateAsync(newContentItem, VersionOptions.Published);
+        //                    newContentItem.Apply(userProfilePart);
+        //                    var createdResult = await _contentManager.UpdateValidateAndCreateAsync(newContentItem, VersionOptions.Published);
 
-                            if (createdResult.Succeeded)
-                            {
-                                return RedirectToLocal(returnUrl, externalLoginViewModel.UserName, email, true);
-                            }
+        //                    if (createdResult.Succeeded)
+        //                    {
+        //                        return RedirectToLocal(returnUrl, externalLoginViewModel.UserName, email, true);
+        //                    }
 
-                            return RedirectToLocal(returnUrl);
-                        }
+        //                    return RedirectToLocal(returnUrl);
+        //                }
 
-                        return View("RegisterExternalLogin", externalLoginViewModel);
-                    }
-                }
-            }
+        //                return View("RegisterExternalLogin", externalLoginViewModel);
+        //            }
+        //        }
+        //    }
 
-            return RedirectToLocal(returnUrl);
-        }
+        //    return RedirectToLocal(returnUrl);
+        //}
 
         [HttpGet]
         [ActionName("ExternalLoginCallback")]
