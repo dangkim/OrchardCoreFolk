@@ -8,8 +8,12 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.WithOrigins("http://localhost:7284",
-                    "https://localhost:7284").AllowAnyHeader()
-                                            .AllowAnyMethod();
+                "https://localhost:7284",
+                "https://webapi.thuesimao.com",
+                "https://webapi.thuesimao.com"
+                )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
         });
 });
 

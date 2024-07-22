@@ -45,7 +45,11 @@ namespace OrchardCore.OpenId
             {
                 builder.AllowAnyHeader()
                        .AllowAnyMethod()
-                       .WithOrigins("http://localhost:7284", "https://localhost:7284")
+                       .WithOrigins("http://localhost:7284",
+                       "https://localhost:7284",
+                       "https://webapi.thuesimao.com",
+                       "https://webapi.thuesimao.com"
+                       )
                        .AllowCredentials();
             }));
 
@@ -113,7 +117,11 @@ namespace OrchardCore.OpenId
             {
                 builder.AllowAnyHeader()
                        .AllowAnyMethod()
-                       .WithOrigins("http://localhost:7284", "https://localhost:7284")
+                       .WithOrigins("http://localhost:7284",
+                       "https://localhost:7284",
+                       "https://webapi.thuesimao.com",
+                       "https://webapi.thuesimao.com"
+                       )
                        .AllowCredentials();
             }));
 
@@ -240,7 +248,11 @@ namespace OrchardCore.OpenId
             {
                 builder.AllowAnyHeader()
                        .AllowAnyMethod()
-                       .WithOrigins("http://localhost:7284", "https://localhost:7284")
+                       .WithOrigins("http://localhost:7284",
+                       "https://localhost:7284",
+                       "https://webapi.thuesimao.com",
+                       "https://webapi.thuesimao.com"
+                       )
                        .AllowCredentials();
             }));
 

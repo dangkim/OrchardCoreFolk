@@ -484,176 +484,23 @@ namespace OrchardCore.SimService.Controllers
             return Ok(user);
         }
 
-        //[HttpGet]
-        //[ActionName("ExternalLoginCallback")]
-        //[AllowAnonymous]
-        //public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
-        //{
-        //    _logger.LogError("ExternalLoginCallback");
-        //    if (remoteError != null)
-        //    {
-        //        _logger.LogError("Error from external provider: {Error}", remoteError);
-        //        return RedirectToLocal(returnUrl);
-        //    }
-
-        //    var info = await _signInManager.GetExternalLoginInfoAsync();
-        //    if (info == null)
-        //    {
-        //        _logger.LogError("Could not get external login info.");
-        //        return RedirectToLocal(returnUrl);
-        //    }
-
-        //    var registrationSettings = (await _siteService.GetSiteSettingsAsync()).As<RegistrationSettings>();
-        //    var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
-
-        //    if (user != null)
-        //    {
-        //        await _accountEvents.InvokeAsync((e, user, modelState) => e.LoggingInAsync(user.UserName, (key, message) => modelState.AddModelError(key, message)), user, ModelState, _logger);
-        //        var localEmail = info.Principal.FindFirstValue(ClaimTypes.Email) ?? info.Principal.FindFirstValue("email");
-
-        //        var identityResult = await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
-        //        if (!identityResult.Succeeded)
-        //        {
-        //            _logger.LogError("Error updating the external authentication tokens.");
-        //        }
-        //        else
-        //        {
-        //            return RedirectToLocal(returnUrl, user.UserName, localEmail, true);
-
-        //        }
-        //    }
-        //    else
-        //    {
-        //        var email = info.Principal.FindFirstValue(ClaimTypes.Email) ?? info.Principal.FindFirstValue("email");
-
-        //        if (!string.IsNullOrWhiteSpace(email))
-        //            user = await _userManager.FindByEmailAsync(email);
-
-        //        ViewData["ReturnUrl"] = returnUrl;
-        //        ViewData["LoginProvider"] = info.LoginProvider;
-
-        //        if (user != null)
-        //        {
-        //            // Link external login to an existing user
-        //            ViewData["UserName"] = user.UserName;
-        //            ViewData["Email"] = email;
-
-        //            // Should go to the home page of client website
-        //            return RedirectToLocal(returnUrl, user.UserName, email, true);
-        //        }
-        //        else
-        //        {
-        //            // no user could be matched, check if a new user can register
-        //            if (registrationSettings.UsersCanRegister == UserRegistrationType.NoRegistration)
-        //            {
-        //                string message = S["Site does not allow user registration."];
-        //                _logger.LogWarning("{Message}", message);
-        //                ModelState.AddModelError("", message);
-        //            }
-        //            else
-        //            {
-        //                var externalLoginViewModel = new RegisterExternalLoginViewModel();
-
-        //                externalLoginViewModel.NoPassword = registrationSettings.NoPasswordForExternalUsers;
-        //                externalLoginViewModel.NoEmail = registrationSettings.NoEmailForExternalUsers;
-        //                externalLoginViewModel.NoUsername = registrationSettings.NoUsernameForExternalUsers;
-
-        //                // If registrationSettings.NoUsernameForExternalUsers is true, this username will not be used
-        //                externalLoginViewModel.UserName = await GenerateUsernameAsync(info);
-        //                externalLoginViewModel.Email = email;
-
-        //                user = await this.RegisterGoogleUser(new RegisterViewModel()
-        //                {
-        //                    UserName = externalLoginViewModel.UserName,
-        //                    Email = externalLoginViewModel.Email,
-        //                    Password = externalLoginViewModel.UserName + "A@",
-        //                    ConfirmPassword = externalLoginViewModel.UserName + "A@",
-        //                }, S["Confirm your account"], _logger);
-
-        //                if (user == null || user is not User u)
-        //                {
-        //                    _logger.LogError("Unable to load user with ID '{UserId}'.", _userManager.GetUserId(User));
-
-        //                    return RedirectToAction(returnUrl);
-        //                }
-
-        //                // If the registration was successful we can link the external provider and redirect the user
-        //                if (user != null)
-        //                {
-        //                    var time = BitConverter.GetBytes(DateTime.UtcNow.ToBinary());
-        //                    var key = Guid.NewGuid().ToByteArray();
-        //                    var token = Convert.ToBase64String(time.Concat(key).ToArray());
-
-        //                    // Create UserProfile/Part
-        //                    var newContentItem = await _contentManager.NewAsync("UserProfile");
-
-        //                    newContentItem.Owner = user.UserName;
-        //                    newContentItem.Author = user.UserName;
-
-        //                    var userProfilePart = new UserProfilePart()
-        //                    {
-        //                        Email = email,
-        //                        UserId = (user as User).Id,
-        //                        UserName = user.UserName,
-        //                        Vendor = "demo",
-        //                        DefaultForwardingNumber = "",
-        //                        Balance = 0m,
-        //                        Rating = 96,
-        //                        DefaultCoutryName = "vietnam",
-        //                        DefaultIso = "vn",
-        //                        DefaultPrefix = "+84",
-        //                        DefaultOperatorName = "virtual16",
-        //                        FrozenBalance = 0m,
-        //                        TokenApi = ""
-        //                    };
-
-        //                    newContentItem.Apply(userProfilePart);
-        //                    var createdResult = await _contentManager.UpdateValidateAndCreateAsync(newContentItem, VersionOptions.Published);
-
-        //                    if (createdResult.Succeeded)
-        //                    {
-        //                        return RedirectToLocal(returnUrl, externalLoginViewModel.UserName, email, true);
-        //                    }
-
-        //                    return RedirectToLocal(returnUrl);
-        //                }
-
-        //                return View("RegisterExternalLogin", externalLoginViewModel);
-        //            }
-        //        }
-        //    }
-
-        //    return RedirectToLocal(returnUrl);
-        //}
-
         [HttpGet]
         [ActionName("ExternalLoginCallback")]
         [AllowAnonymous]
-        public async Task<IActionResult> ExternalLoginCallback(string remoteError = null)
+        public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
         {
             _logger.LogError("ExternalLoginCallback");
-            var url = _config["ProxyExternalLoginUrl"];
             if (remoteError != null)
             {
                 _logger.LogError("Error from external provider: {Error}", remoteError);
-
-                return Ok(new ReturnModel
-                {
-                    Error = "Error from external provider",
-                    ErrorCode = (int)GoogleLoginErrorCode.ErrorFromExternal,
-                });
+                return RedirectToLocal(returnUrl);
             }
 
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
                 _logger.LogError("Could not get external login info.");
-
-                return Ok(new ReturnModel
-                {
-                    Error = "Could not get external login info",
-                    ErrorCode = (int)GoogleLoginErrorCode.CouldNotGetExternalLoginInfo,
-                });
+                return RedirectToLocal(returnUrl);
             }
 
             var registrationSettings = (await _siteService.GetSiteSettingsAsync()).As<RegistrationSettings>();
@@ -671,12 +518,8 @@ namespace OrchardCore.SimService.Controllers
                 }
                 else
                 {
-                    return Ok(new ReturnModel
-                    {
-                        Error = "No Error",
-                        ErrorCode = (int)GoogleLoginErrorCode.Success,
-                        Value = user.UserName
-                    });
+                    return RedirectToLocal(returnUrl, user.UserName, localEmail, true);
+
                 }
             }
             else
@@ -684,103 +527,260 @@ namespace OrchardCore.SimService.Controllers
                 var email = info.Principal.FindFirstValue(ClaimTypes.Email) ?? info.Principal.FindFirstValue("email");
 
                 if (!string.IsNullOrWhiteSpace(email))
-                {
                     user = await _userManager.FindByEmailAsync(email);
-                }
+
+                ViewData["ReturnUrl"] = returnUrl;
+                ViewData["LoginProvider"] = info.LoginProvider;
 
                 if (user != null)
                 {
-                    return Ok(new ReturnModel
-                    {
-                        Error = "No Error",
-                        ErrorCode = (int)GoogleLoginErrorCode.Success,
-                        Value = user.UserName,
-                    });
+                    // Link external login to an existing user
+                    ViewData["UserName"] = user.UserName;
+                    ViewData["Email"] = email;
+
+                    // Should go to the home page of client website
+                    return RedirectToLocal(returnUrl, user.UserName, email, true);
                 }
                 else
                 {
-                    var externalLoginViewModel = new RegisterExternalLoginViewModel
+                    // no user could be matched, check if a new user can register
+                    if (registrationSettings.UsersCanRegister == UserRegistrationType.NoRegistration)
                     {
-                        NoPassword = registrationSettings.NoPasswordForExternalUsers,
-                        NoEmail = registrationSettings.NoEmailForExternalUsers,
-                        NoUsername = registrationSettings.NoUsernameForExternalUsers,
+                        string message = S["Site does not allow user registration."];
+                        _logger.LogWarning("{Message}", message);
+                        ModelState.AddModelError("", message);
+                    }
+                    else
+                    {
+                        var externalLoginViewModel = new RegisterExternalLoginViewModel();
+
+                        externalLoginViewModel.NoPassword = registrationSettings.NoPasswordForExternalUsers;
+                        externalLoginViewModel.NoEmail = registrationSettings.NoEmailForExternalUsers;
+                        externalLoginViewModel.NoUsername = registrationSettings.NoUsernameForExternalUsers;
 
                         // If registrationSettings.NoUsernameForExternalUsers is true, this username will not be used
-                        UserName = await GenerateUsernameAsync(info),
-                        Email = email
-                    };
+                        externalLoginViewModel.UserName = await GenerateUsernameAsync(info);
+                        externalLoginViewModel.Email = email;
 
-                    user = await this.RegisterGoogleUser(new RegisterViewModel()
-                    {
-                        UserName = externalLoginViewModel.UserName,
-                        Email = externalLoginViewModel.Email,
-                        Password = externalLoginViewModel.UserName + "A@",
-                        ConfirmPassword = externalLoginViewModel.UserName + "A@",
-                    }, S["Confirm your account"], _logger);
-
-                    if (user == null || user is not User u)
-                    {
-                        _logger.LogError("Unable to load user with ID '{UserId}'.", _userManager.GetUserId(User));
-
-                        return Ok(new ReturnModel
+                        user = await this.RegisterGoogleUser(new RegisterViewModel()
                         {
-                            Error = $"Unable to load user with ID '{_userManager.GetUserId(User)}'.",
-                            ErrorCode = (int)GoogleLoginErrorCode.UnableToLoadUser,
-                        });
-                    }
+                            UserName = externalLoginViewModel.UserName,
+                            Email = externalLoginViewModel.Email,
+                            Password = externalLoginViewModel.UserName + "A@",
+                            ConfirmPassword = externalLoginViewModel.UserName + "A@",
+                        }, S["Confirm your account"], _logger);
 
-                    // If the registration was successful we can link the external provider and redirect the user
-                    if (user != null)
-                    {
-                        var time = BitConverter.GetBytes(DateTime.UtcNow.ToBinary());
-                        var key = Guid.NewGuid().ToByteArray();
-                        var token = Convert.ToBase64String(time.Concat(key).ToArray());
-
-                        // Create UserProfile/Part
-                        var newContentItem = await _contentManager.NewAsync("UserProfile");
-
-                        newContentItem.Owner = user.UserName;
-                        newContentItem.Author = user.UserName;
-
-                        var userProfilePart = new UserProfilePart()
+                        if (user == null || user is not User u)
                         {
-                            Email = email,
-                            UserId = (user as User).Id,
-                            UserName = user.UserName,
-                            Vendor = "demo",
-                            DefaultForwardingNumber = "",
-                            Balance = 0m,
-                            Rating = 96,
-                            DefaultCoutryName = "vietnam",
-                            DefaultIso = "vn",
-                            DefaultPrefix = "+84",
-                            DefaultOperatorName = "virtual16",
-                            FrozenBalance = 0m,
-                            TokenApi = ""
-                        };
+                            _logger.LogError("Unable to load user with ID '{UserId}'.", _userManager.GetUserId(User));
 
-                        newContentItem.Apply(userProfilePart);
-                        var createdResult = await _contentManager.UpdateValidateAndCreateAsync(newContentItem, VersionOptions.Published);
-
-                        if (createdResult.Succeeded)
-                        {
-                            return Ok(new ReturnModel
-                            {
-                                Error = "No Error",
-                                ErrorCode = (int)GoogleLoginErrorCode.Success,
-                                Value = externalLoginViewModel.UserName,
-                            });
+                            return RedirectToAction(returnUrl);
                         }
+
+                        // If the registration was successful we can link the external provider and redirect the user
+                        if (user != null)
+                        {
+                            var time = BitConverter.GetBytes(DateTime.UtcNow.ToBinary());
+                            var key = Guid.NewGuid().ToByteArray();
+                            var token = Convert.ToBase64String(time.Concat(key).ToArray());
+
+                            // Create UserProfile/Part
+                            var newContentItem = await _contentManager.NewAsync("UserProfile");
+
+                            newContentItem.Owner = user.UserName;
+                            newContentItem.Author = user.UserName;
+
+                            var userProfilePart = new UserProfilePart()
+                            {
+                                Email = email,
+                                UserId = (user as User).Id,
+                                UserName = user.UserName,
+                                Vendor = "demo",
+                                DefaultForwardingNumber = "",
+                                Balance = 0m,
+                                Rating = 96,
+                                DefaultCoutryName = "vietnam",
+                                DefaultIso = "vn",
+                                DefaultPrefix = "+84",
+                                DefaultOperatorName = "virtual16",
+                                FrozenBalance = 0m,
+                                TokenApi = ""
+                            };
+
+                            newContentItem.Apply(userProfilePart);
+                            var createdResult = await _contentManager.UpdateValidateAndCreateAsync(newContentItem, VersionOptions.Published);
+
+                            if (createdResult.Succeeded)
+                            {
+                                return RedirectToLocal(returnUrl, externalLoginViewModel.UserName, email, true);
+                            }
+
+                            return RedirectToLocal(returnUrl);
+                        }
+
+                        return View("RegisterExternalLogin", externalLoginViewModel);
                     }
                 }
             }
 
-            return Ok(new ReturnModel
-            {
-                Error = "Could not create userProfilePart",
-                ErrorCode = (int)GoogleLoginErrorCode.CouldNotCreateUserProfilePart,
-            });
+            return RedirectToLocal(returnUrl);
         }
+
+        //[HttpGet]
+        //[ActionName("ExternalLoginCallback")]
+        //[AllowAnonymous]
+        //public async Task<IActionResult> ExternalLoginCallback(string remoteError = null)
+        //{
+        //    _logger.LogError("ExternalLoginCallback");
+        //    var url = _config["ProxyExternalLoginUrl"];
+        //    if (remoteError != null)
+        //    {
+        //        _logger.LogError("Error from external provider: {Error}", remoteError);
+
+        //        return Ok(new ReturnModel
+        //        {
+        //            Error = "Error from external provider",
+        //            ErrorCode = (int)GoogleLoginErrorCode.ErrorFromExternal,
+        //        });
+        //    }
+
+        //    var info = await _signInManager.GetExternalLoginInfoAsync();
+        //    if (info == null)
+        //    {
+        //        _logger.LogError("Could not get external login info.");
+
+        //        return Ok(new ReturnModel
+        //        {
+        //            Error = "Could not get external login info",
+        //            ErrorCode = (int)GoogleLoginErrorCode.CouldNotGetExternalLoginInfo,
+        //        });
+        //    }
+
+        //    var registrationSettings = (await _siteService.GetSiteSettingsAsync()).As<RegistrationSettings>();
+        //    var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+
+        //    if (user != null)
+        //    {
+        //        await _accountEvents.InvokeAsync((e, user, modelState) => e.LoggingInAsync(user.UserName, (key, message) => modelState.AddModelError(key, message)), user, ModelState, _logger);
+        //        var localEmail = info.Principal.FindFirstValue(ClaimTypes.Email) ?? info.Principal.FindFirstValue("email");
+
+        //        var identityResult = await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
+        //        if (!identityResult.Succeeded)
+        //        {
+        //            _logger.LogError("Error updating the external authentication tokens.");
+        //        }
+        //        else
+        //        {
+        //            return Ok(new ReturnModel
+        //            {
+        //                Error = "No Error",
+        //                ErrorCode = (int)GoogleLoginErrorCode.Success,
+        //                Value = user.UserName
+        //            });
+        //        }
+        //    }
+        //    else
+        //    {
+        //        var email = info.Principal.FindFirstValue(ClaimTypes.Email) ?? info.Principal.FindFirstValue("email");
+
+        //        if (!string.IsNullOrWhiteSpace(email))
+        //        {
+        //            user = await _userManager.FindByEmailAsync(email);
+        //        }
+
+        //        if (user != null)
+        //        {
+        //            return Ok(new ReturnModel
+        //            {
+        //                Error = "No Error",
+        //                ErrorCode = (int)GoogleLoginErrorCode.Success,
+        //                Value = user.UserName,
+        //            });
+        //        }
+        //        else
+        //        {
+        //            var externalLoginViewModel = new RegisterExternalLoginViewModel
+        //            {
+        //                NoPassword = registrationSettings.NoPasswordForExternalUsers,
+        //                NoEmail = registrationSettings.NoEmailForExternalUsers,
+        //                NoUsername = registrationSettings.NoUsernameForExternalUsers,
+
+        //                // If registrationSettings.NoUsernameForExternalUsers is true, this username will not be used
+        //                UserName = await GenerateUsernameAsync(info),
+        //                Email = email
+        //            };
+
+        //            user = await this.RegisterGoogleUser(new RegisterViewModel()
+        //            {
+        //                UserName = externalLoginViewModel.UserName,
+        //                Email = externalLoginViewModel.Email,
+        //                Password = externalLoginViewModel.UserName + "A@",
+        //                ConfirmPassword = externalLoginViewModel.UserName + "A@",
+        //            }, S["Confirm your account"], _logger);
+
+        //            if (user == null || user is not User u)
+        //            {
+        //                _logger.LogError("Unable to load user with ID '{UserId}'.", _userManager.GetUserId(User));
+
+        //                return Ok(new ReturnModel
+        //                {
+        //                    Error = $"Unable to load user with ID '{_userManager.GetUserId(User)}'.",
+        //                    ErrorCode = (int)GoogleLoginErrorCode.UnableToLoadUser,
+        //                });
+        //            }
+
+        //            // If the registration was successful we can link the external provider and redirect the user
+        //            if (user != null)
+        //            {
+        //                var time = BitConverter.GetBytes(DateTime.UtcNow.ToBinary());
+        //                var key = Guid.NewGuid().ToByteArray();
+        //                var token = Convert.ToBase64String(time.Concat(key).ToArray());
+
+        //                // Create UserProfile/Part
+        //                var newContentItem = await _contentManager.NewAsync("UserProfile");
+
+        //                newContentItem.Owner = user.UserName;
+        //                newContentItem.Author = user.UserName;
+
+        //                var userProfilePart = new UserProfilePart()
+        //                {
+        //                    Email = email,
+        //                    UserId = (user as User).Id,
+        //                    UserName = user.UserName,
+        //                    Vendor = "demo",
+        //                    DefaultForwardingNumber = "",
+        //                    Balance = 0m,
+        //                    Rating = 96,
+        //                    DefaultCoutryName = "vietnam",
+        //                    DefaultIso = "vn",
+        //                    DefaultPrefix = "+84",
+        //                    DefaultOperatorName = "virtual16",
+        //                    FrozenBalance = 0m,
+        //                    TokenApi = ""
+        //                };
+
+        //                newContentItem.Apply(userProfilePart);
+        //                var createdResult = await _contentManager.UpdateValidateAndCreateAsync(newContentItem, VersionOptions.Published);
+
+        //                if (createdResult.Succeeded)
+        //                {
+        //                    return Ok(new ReturnModel
+        //                    {
+        //                        Error = "No Error",
+        //                        ErrorCode = (int)GoogleLoginErrorCode.Success,
+        //                        Value = externalLoginViewModel.UserName,
+        //                    });
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    return Ok(new ReturnModel
+        //    {
+        //        Error = "Could not create userProfilePart",
+        //        ErrorCode = (int)GoogleLoginErrorCode.CouldNotCreateUserProfilePart,
+        //    });
+        //}
 
         private static bool IsEmail(string str)
         {
