@@ -25,6 +25,7 @@ using OrchardCore.ContentManagement.Metadata;
 using Microsoft.Extensions.Caching.Memory;
 using OrchardCore.Environment.Cache;
 using RestSharp;
+using OrchardCore.Data;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -42,6 +43,7 @@ namespace OrchardCore.SimService.SimApi
         private readonly IEmailAddressValidator _emailAddressValidator;
         private readonly ILogger _logger;
         private readonly ISession _session;
+        private readonly IReadOnlySession _sessionReadOnly;
         private readonly IUserService _userService;
         private readonly IContentDefinitionManager _contentDefinitionManager;
         private readonly IMemoryCache _memoryCache;
@@ -56,6 +58,7 @@ namespace OrchardCore.SimService.SimApi
             IUserService userService,
             Microsoft.Extensions.Configuration.IConfiguration config,
             ISession session,
+            IReadOnlySession sessionReadOnly,
             IContentManager contentManager,
             IAuthorizationService authorizationService,
             UserManager<IUser> userManager,
@@ -68,6 +71,8 @@ namespace OrchardCore.SimService.SimApi
             _contentDefinitionManager = contentDefinitionManager;
             _userService = userService;
             _config = config;
+            _session = session;
+            _sessionReadOnly = sessionReadOnly;
             _contentManager = contentManager;
             _authorizationService = authorizationService;
             _userManager = userManager;
@@ -76,7 +81,6 @@ namespace OrchardCore.SimService.SimApi
             _memoryCache = memoryCache;
             _signal = signal;
             S = stringLocalizer;
-            _session = session;
             btcPayliteApiUrl = _config["BTCPayLiteUrl"];
         }
 
@@ -96,7 +100,7 @@ namespace OrchardCore.SimService.SimApi
 
             try
             {
-                var result = await ApiCommon.UpdateSixSimBalanceByCoin(_contentManager, _session, updateBalanceModel, user, _logger);
+                var result = await ApiCommon.UpdateSixSimBalanceByCoin(_contentManager, _sessionReadOnly, updateBalanceModel, user, _logger);
 
                 return Ok(true);
             }
@@ -125,7 +129,7 @@ namespace OrchardCore.SimService.SimApi
 
             try
             {
-                var result = await ApiCommon.UpdateSixSimBalanceByBank(_contentManager, _session, updateBalanceModel, user, _logger);
+                var result = await ApiCommon.UpdateSixSimBalanceByBank(_contentManager, _sessionReadOnly, updateBalanceModel, user, _logger);
 
                 return Ok(true);
             }
@@ -153,8 +157,8 @@ namespace OrchardCore.SimService.SimApi
                         statusCode: (int)HttpStatusCode.BadRequest);
             }
 
-            var btcPayliteToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "BtcpayToken");
-            var storeId = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "BtcpayStoreKey");
+            var btcPayliteToken = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config, "BtcpayToken");
+            var storeId = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config, "BtcpayStoreKey");
 
             var updateBalanceUrl = _config["PaxHubUrl"] + "/UpdateSixSimBalanceByCoin";
             var ethApiGetNewAddressUrl = $"{btcPayliteApiUrl}/api/v1/stores/{storeId}/invoices";
@@ -216,8 +220,8 @@ namespace OrchardCore.SimService.SimApi
                         statusCode: (int)HttpStatusCode.BadRequest);
             }
 
-            var btcPayliteToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "BtcpayToken");
-            var storeId = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "BtcpayStoreKey");
+            var btcPayliteToken = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config, "BtcpayToken");
+            var storeId = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config, "BtcpayStoreKey");
 
             var updateBalanceUrl = _config["PaxHubUrl"] + "/UpdateSixSimBalanceByCoin";
             var btcApiGetNewAddressUrl = $"{btcPayliteApiUrl}/api/v1/stores/{storeId}/invoices";
@@ -279,8 +283,8 @@ namespace OrchardCore.SimService.SimApi
                         statusCode: (int)HttpStatusCode.BadRequest);
             }
 
-            var btcPayliteToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "BtcpayToken");
-            var storeId = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "BtcpayStoreKey");
+            var btcPayliteToken = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config, "BtcpayToken");
+            var storeId = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config, "BtcpayStoreKey");
 
             var updateBalanceUrl = _config["PaxHubUrl"] + "/UpdateSixSimBalanceByCoin";
             var usdt20ApiGetNewAddressUrl = $"{btcPayliteApiUrl}/api/v1/stores/{storeId}/invoices";
@@ -343,8 +347,8 @@ namespace OrchardCore.SimService.SimApi
                         statusCode: (int)HttpStatusCode.BadRequest);
             }
 
-            var btcPayliteToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "BtcpayToken");
-            var storeId = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "BtcpayStoreKey");
+            var btcPayliteToken = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config, "BtcpayToken");
+            var storeId = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config, "BtcpayStoreKey");
 
             var updateBalanceUrl = _config["PaxHubUrl"] + "/UpdateSixSimBalanceByCoin";
             var trcApiGetNewAddressUrl = $"{btcPayliteApiUrl}/api/v1/stores/{storeId}/invoices";

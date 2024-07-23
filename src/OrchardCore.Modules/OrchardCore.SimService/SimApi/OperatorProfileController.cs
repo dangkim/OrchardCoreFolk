@@ -85,8 +85,7 @@ namespace OrchardCore.SimService.SimApi
             var request = new RestRequest();
 
             var response = await client.ExecuteGetAsync(request);
-            //var resObject = JsonConvert.DeserializeObject<OperatorsWareHouseTwoDto>(response.Content);
-            //return Ok(resObject);
+
             return Ok(response.Content);
         }
         #endregion

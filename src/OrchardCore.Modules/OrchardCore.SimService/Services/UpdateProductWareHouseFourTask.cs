@@ -14,6 +14,7 @@ using OrchardCore.Environment.Cache;
 using RestSharp;
 using YesSql;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
+using OrchardCore.Data;
 
 namespace OrchardCore.SimService.Services
 {
@@ -33,7 +34,7 @@ namespace OrchardCore.SimService.Services
 
         public async Task DoWorkAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken)
         {
-            var session = serviceProvider.GetService<ISession>();
+            var session = serviceProvider.GetService<IReadOnlySession>();
             var memoryCache = serviceProvider.GetService<IMemoryCache>();
             var signal = serviceProvider.GetService<ISignal>();
             var contentManager = serviceProvider.GetRequiredService<IContentManager>();

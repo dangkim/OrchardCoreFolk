@@ -62,7 +62,7 @@ namespace OrchardCore.SimService.Controllers
         private readonly UserManager<IUser> _userManager;
         private readonly IEmailAddressValidator _emailAddressValidator;
         private readonly ILogger _logger;
-        private readonly YesSql.ISession _session;
+        private readonly ISession _session;
         private readonly IUserService _userService;
         private readonly ISiteService _siteService;
         private readonly SignInManager<IUser> _signInManager;

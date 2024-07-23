@@ -22,6 +22,8 @@ namespace OrchardCore.SimService.ApiCommonFunctions
 {
     public static class ApiCommon
     {
+        const string CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
         public static async Task<Dictionary<string, decimal>> CalculateBalanceAsync(decimal userBalanceBTC, decimal userBalanceEth, decimal userBalanceUsdt20, decimal userBalanceVND, string userName, ISession session)
         {
             var document = await session.Query<ContentItem, ContentItemIndex>(x => x.Published && x.Latest && x.DisplayText.Contains("pending") && x.ContentType == "Trade" && x.Owner == userName).ListAsync();
@@ -62,7 +64,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
 
             return dictionaryBalance;
         }
-        public static async Task<bool> UpdateSixSimBalanceByCoin(IContentManager _contentManager, ISession session, UpdateBalanceModel updateBalanceModel, User user, ILogger logger)
+        public static async Task<bool> UpdateSixSimBalanceByCoin(IContentManager _contentManager, IReadOnlySession session, UpdateBalanceModel updateBalanceModel, User user, ILogger logger)
         {
             try
             {
@@ -158,7 +160,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
                 throw;
             }
         }
-        public static async Task<bool> UpdateSixSimBalanceByBank(IContentManager _contentManager, ISession session, UpdateBalanceModel updateBalanceModel, User user, ILogger logger)
+        public static async Task<bool> UpdateSixSimBalanceByBank(IContentManager _contentManager, IReadOnlySession session, UpdateBalanceModel updateBalanceModel, User user, ILogger logger)
         {
             try
             {
@@ -168,8 +170,6 @@ namespace OrchardCore.SimService.ApiCommonFunctions
                 .With<UserProfilePartIndex>(p => p.UserId == updateBalanceModel.UserId)
                 .FirstOrDefaultAsync();
 
-                //var newUserContent = await _contentManager.GetAsync(userContent.ContentItemId, VersionOptions.DraftRequired);
-
                 if (userContent != null)
                 {
                     var content = userContent.Content;
@@ -178,7 +178,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
 
                     logger.LogError("UpdateSixSimBalanceByCoin: {Amount} Rate: {Rate}", updateBalanceModel.Amount, updateBalanceModel.Rate);
 
-                    var amount = Decimal.Parse(updateBalanceModel.Amount) * Decimal.Parse(updateBalanceModel.Rate); // All is RUB currency
+                    var amount = decimal.Parse(updateBalanceModel.Amount) * decimal.Parse(updateBalanceModel.Rate); // All is RUB currency
                     currentBalance += amount;
 
                     var newUserProfilePart = new UserProfilePart
@@ -254,27 +254,27 @@ namespace OrchardCore.SimService.ApiCommonFunctions
                 throw;
             }
         }
-        public static async Task<string> ReadCache(ISession session, IMemoryCache _memoryCache, ISignal _signal, Microsoft.Extensions.Configuration.IConfiguration _config, string contentType = "FiveSimToken")
+        public static async Task<string> ReadCache(IReadOnlySession session, IMemoryCache _memoryCache, ISignal _signal, Microsoft.Extensions.Configuration.IConfiguration _config, string contentType = "FiveSimToken")
         {
             return contentType switch
             {
-                "BtcpayToken" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["BtcpayCacheKey"], _config["BtcpaySignalCacheKey"], contentType, "BtcpayToken", "Token"),
-                "BtcpayStoreKey" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["BtcpayStoreIdKey"], _config["BtcpayStoreIdSignalKey"], contentType, "BtcpayStoreKey", "Token"),
-                "FiveSimToken" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["FiveSimCacheKey"], _config["FiveSimCacheSignalKey"], contentType, "FiveSimToken", "Token"),
-                "TwoLineSimToken" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["TwoLineSimCacheKey"], _config["TwoLineSimCacheSignalKey"], contentType, "TwoLineSimToken", "Token"),
-                "CSimToken" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["CSimCacheKey"], _config["CSimCacheSignalKey"], contentType, "CSimToken", "Token"),
-                "USimToken" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["USimCacheKey"], _config["USimCacheSignalKey"], contentType, "USimToken", "Token"),
-                "VSimToken" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["VSimCacheKey"], _config["VSimCacheSignalKey"], contentType, "VSimToken", "Token"),
-                "Percentage" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["PercentKey"], _config["PercentSignalKey"], contentType, "Percentage", "Percent"),
-                "LSimPercentage" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["LSimPercentKey"], _config["LSimPercentSignalKey"], contentType, "LSimPercentage", "Percent"),
-                "CSimPercentage" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["CSimPercentKey"], _config["CSimPercentSignalKey"], contentType, "CSimPercentage", "Percent"),
-                "USimPercentage" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["USimPercentKey"], _config["USimPercentSignalKey"], contentType, "USimPercentage", "Percent"),
-                "VSimPercentage" => await GetTokenFromCacheOrDb(session, _memoryCache, _signal, _config["VSimPercentKey"], _config["VSimPercentSignalKey"], contentType, "VSimPercentage", "Percent"),
+                "BtcpayToken" => await GetValueFromCacheOrDb(session, _memoryCache, _signal, _config["BtcpayCacheKey"], _config["BtcpaySignalCacheKey"], contentType, "BtcpayToken", "Token"),
+                "BtcpayStoreKey" => await GetValueFromCacheOrDb(session, _memoryCache, _signal, _config["BtcpayStoreIdKey"], _config["BtcpayStoreIdSignalKey"], contentType, "BtcpayStoreKey", "Token"),
+                "FiveSimToken" => await GetValueFromCacheOrDb(session, _memoryCache, _signal, _config["FiveSimCacheKey"], _config["FiveSimCacheSignalKey"], contentType, "FiveSimToken", "Token"),
+                "TwoLineSimToken" => await GetValueFromCacheOrDb(session, _memoryCache, _signal, _config["TwoLineSimCacheKey"], _config["TwoLineSimCacheSignalKey"], contentType, "TwoLineSimToken", "Token"),
+                "CSimToken" => await GetValueFromCacheOrDb(session, _memoryCache, _signal, _config["CSimCacheKey"], _config["CSimCacheSignalKey"], contentType, "CSimToken", "Token"),
+                "USimToken" => await GetValueFromCacheOrDb(session, _memoryCache, _signal, _config["USimCacheKey"], _config["USimCacheSignalKey"], contentType, "USimToken", "Token"),
+                "VSimToken" => await GetValueFromCacheOrDb(session, _memoryCache, _signal, _config["VSimCacheKey"], _config["VSimCacheSignalKey"], contentType, "VSimToken", "Token"),
+                "Percentage" => await GetValueFromCacheOrDb(session, _memoryCache, _signal, _config["PercentKey"], _config["PercentSignalKey"], contentType, "Percentage", "Percent"),
+                "LSimPercentage" => await GetValueFromCacheOrDb(session, _memoryCache, _signal, _config["LSimPercentKey"], _config["LSimPercentSignalKey"], contentType, "LSimPercentage", "Percent"),
+                "CSimPercentage" => await GetValueFromCacheOrDb(session, _memoryCache, _signal, _config["CSimPercentKey"], _config["CSimPercentSignalKey"], contentType, "CSimPercentage", "Percent"),
+                "USimPercentage" => await GetValueFromCacheOrDb(session, _memoryCache, _signal, _config["USimPercentKey"], _config["USimPercentSignalKey"], contentType, "USimPercentage", "Percent"),
+                "VSimPercentage" => await GetValueFromCacheOrDb(session, _memoryCache, _signal, _config["VSimPercentKey"], _config["VSimPercentSignalKey"], contentType, "VSimPercentage", "Percent"),
                 _ => string.Empty,
             };
         }
 
-        public static async Task<string> ReadExchangeRateCache(ISession session, IMemoryCache _memoryCache, ISignal _signal, Microsoft.Extensions.Configuration.IConfiguration _config, string currency = "VND")
+        public static async Task<string> ReadExchangeRateCache(IReadOnlySession session, IMemoryCache _memoryCache, ISignal _signal, Microsoft.Extensions.Configuration.IConfiguration _config, string currency = "VND")
         {
             if (currency == "VND")
             {
@@ -769,6 +769,37 @@ namespace OrchardCore.SimService.ApiCommonFunctions
             }
         }
 
+        public static string EncodeUserId(long userId)
+        {
+            if (userId == 0)
+            {
+                return CHARS[0].ToString();
+            }
+
+            var result = string.Empty;
+
+            while (userId > 0)
+            {
+                var remainder = (int)(userId % 26);
+                result = CHARS[remainder] + result;
+                userId /= 26;
+            }
+
+            return result;
+        }
+
+        public static long DecodeUserId(string encodedUserId)
+        {
+            long result = 0;
+
+            for (var i = 0; i < encodedUserId.Length; i++)
+            {
+                result *= 26;
+                result += CHARS.IndexOf(encodedUserId[i]);
+            }
+
+            return result;
+        }
 
         #region Private Function
         private static bool IsUrlValid(string stringCheck)
@@ -792,7 +823,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
             return false;
         }
 
-        private static async Task<string> GetTokenFromCacheOrDb(ISession session, IMemoryCache memoryCache, ISignal signal, string cacheKey, string signalKey, string contentType, string contentField, string valueObject)
+        private static async Task<string> GetValueFromCacheOrDb(ISession session, IMemoryCache memoryCache, ISignal signal, string cacheKey, string signalKey, string contentType, string contentField, string valueObject)
         {
             if (!memoryCache.TryGetValue(cacheKey, out string cachedToken))
             {

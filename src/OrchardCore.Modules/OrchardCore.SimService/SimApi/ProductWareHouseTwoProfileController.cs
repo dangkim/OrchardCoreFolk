@@ -24,6 +24,7 @@ using OrchardCore.SimService.ApiCommonFunctions;
 using Microsoft.AspNetCore.Identity;
 using OrchardCore.Users;
 using OrchardCore.ContentManagement.Records;
+using OrchardCore.Data;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -33,7 +34,7 @@ namespace OrchardCore.SimService.SimApi
     [OpenApiTag("Products and prices", Description = "Get information of products.")]
     public class ProductWareHouseTwoProfileController : Controller
     {
-        private readonly ISession _session;
+        private readonly IReadOnlySession _session;
         private readonly UserManager<IUser> _userManager;
         private readonly IContentManager _contentManager;
         private readonly IAuthorizationService _authorizationService;
@@ -42,7 +43,7 @@ namespace OrchardCore.SimService.SimApi
         private readonly ISignal _signal;
 
         public ProductWareHouseTwoProfileController(
-            ISession session,
+            IReadOnlySession session,
             IMemoryCache memoryCache,
             ISignal signal,
             IContentManager contentManager,

@@ -17,6 +17,7 @@ using RestSharp;
 using YesSql;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 using OrchardCore.SimService.Permissions;
+using OrchardCore.Data;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -30,13 +31,13 @@ namespace OrchardCore.SimService.SimApi
         private readonly IContentManager _contentManager;
         private readonly IAuthorizationService _authorizationService;
         private readonly IConfiguration _config;
-        private readonly ISession _session;
+        private readonly IReadOnlySession _session;
         private readonly IMemoryCache _memoryCache;
         private readonly ISignal _signal;
 
         public RateProfileController(
             UserManager<IUser> userManager,
-            ISession session,
+            IReadOnlySession session,
             IMemoryCache memoryCache,
             ISignal signal,
             IContentManager contentManager,

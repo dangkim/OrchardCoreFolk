@@ -14,6 +14,7 @@ using OrchardCore.Environment.Cache;
 using OrchardCore.Users;
 using RestSharp;
 using OrchardCore.SimService.RedocAttributeProcessors;
+using OrchardCore.Data;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -27,7 +28,7 @@ namespace OrchardCore.SimService.SimApi
         private readonly IContentManager _contentManager;
         private readonly IAuthorizationService _authorizationService;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _config;
-        private readonly YesSql.ISession _session;
+        private readonly IReadOnlySession _session;
         private readonly IMemoryCache _memoryCache;
         private readonly ISignal _signal;
         private readonly UserManager<IUser> _userManager;
@@ -36,7 +37,7 @@ namespace OrchardCore.SimService.SimApi
             IContentManager contentManager,
             UserManager<IUser> userManager,
             IAuthorizationService authorizationService,
-            YesSql.ISession session,
+            IReadOnlySession session,
             IMemoryCache memoryCache,
             ISignal signal,
             Microsoft.Extensions.Configuration.IConfiguration config)

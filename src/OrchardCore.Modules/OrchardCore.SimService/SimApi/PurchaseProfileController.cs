@@ -25,6 +25,7 @@ using System.Net.Http.Headers;
 using static OrchardCore.SimService.SimApi.ProductProfileController;
 using System.Collections.Generic;
 using System.Net.Http.Json;
+using OrchardCore.Data;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -34,7 +35,7 @@ namespace OrchardCore.SimService.SimApi
     [OpenApiTag("Purchase", Description = "Get information of purchase.")]
     public class PurchaseProfileController : Controller
     {
-        private readonly ISession _session;
+        private readonly IReadOnlySession _session;
         private readonly IContentManager _contentManager;
         private readonly UserManager<IUser> _userManager;
         private readonly IAuthorizationService _authorizationService;
@@ -44,7 +45,7 @@ namespace OrchardCore.SimService.SimApi
         private readonly IHttpClientFactory _httpClientFactory;
 
         public PurchaseProfileController(
-            ISession session,
+            IReadOnlySession session,
             IMemoryCache memoryCache,
             ISignal signal,
             IContentManager contentManager,

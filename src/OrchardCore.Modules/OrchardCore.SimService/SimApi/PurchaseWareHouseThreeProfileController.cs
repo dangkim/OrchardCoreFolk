@@ -21,6 +21,7 @@ using OrchardCore.Users;
 using RestSharp;
 using YesSql;
 using OrchardCore.SimService.Permissions;
+using OrchardCore.Data;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -30,7 +31,7 @@ namespace OrchardCore.SimService.SimApi
     [OpenApiTag("PurchaseWareHouseThree", Description = "Get information of purchase of Ware House Three.")]
     public class PurchaseWareHouseThreeProfileController : Controller
     {
-        private readonly ISession _session;
+        private readonly IReadOnlySession _session;
         private readonly IContentManager _contentManager;
         private readonly UserManager<IUser> _userManager;
         private readonly IAuthorizationService _authorizationService;
@@ -39,7 +40,7 @@ namespace OrchardCore.SimService.SimApi
         private readonly ISignal _signal;
 
         public PurchaseWareHouseThreeProfileController(
-          ISession session,
+          IReadOnlySession session,
           IMemoryCache memoryCache,
           ISignal signal,
           IContentManager contentManager,

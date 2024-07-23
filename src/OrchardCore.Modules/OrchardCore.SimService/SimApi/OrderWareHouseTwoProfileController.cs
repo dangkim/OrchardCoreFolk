@@ -19,6 +19,7 @@ using CommonPermissions = OrchardCore.Contents.CommonPermissions;
 using OrchardCore.Users;
 using YesSql;
 using OrchardCore.SimService.Permissions;
+using OrchardCore.Data;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -29,7 +30,7 @@ namespace OrchardCore.SimService.SimApi
     public class OrderWareHouseTwoProfileController : Controller
     {
         //public string fiveSimToken;
-        private readonly ISession _session;
+        private readonly IReadOnlySession _session;
         private readonly IContentManager _contentManager;
         private readonly UserManager<IUser> _userManager;
         private readonly IAuthorizationService _authorizationService;
@@ -38,7 +39,7 @@ namespace OrchardCore.SimService.SimApi
         private readonly ISignal _signal;
 
         public OrderWareHouseTwoProfileController(
-           ISession session,
+           IReadOnlySession session,
            IMemoryCache memoryCache,
            ISignal signal,
            IContentManager contentManager,

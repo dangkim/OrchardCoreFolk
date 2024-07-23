@@ -28,6 +28,7 @@ using System.IO;
 using System.Text.Json;
 using System.IO.Compression;
 using Org.BouncyCastle.Asn1.Ocsp;
+using OrchardCore.Data;
 
 namespace OrchardCore.SimService.SimApi
 {
@@ -38,6 +39,7 @@ namespace OrchardCore.SimService.SimApi
     public class ProductProfileController : Controller
     {
         private readonly ISession _session;
+        private readonly IReadOnlySession _sessionReadOnly;
         private readonly UserManager<IUser> _userManager;
         private readonly IContentManager _contentManager;
         private readonly IAuthorizationService _authorizationService;
@@ -48,6 +50,7 @@ namespace OrchardCore.SimService.SimApi
 
         public ProductProfileController(
             ISession session,
+            IReadOnlySession sessionReadOnly,
             IMemoryCache memoryCache,
             ISignal signal,
             IContentManager contentManager,
@@ -57,6 +60,7 @@ namespace OrchardCore.SimService.SimApi
             IHttpClientFactory httpClientFactory)
         {
             _session = session;
+            _sessionReadOnly = sessionReadOnly;
             _memoryCache = memoryCache;
             _signal = signal;
             _contentManager = contentManager;
@@ -110,7 +114,7 @@ namespace OrchardCore.SimService.SimApi
         [AllowAnonymous]
         public async Task<IActionResult> ProductsRequestAsync(string country, string sixsimoperator, string product = "")
         {
-            var percentStringValue = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config, "Percentage");
+            var percentStringValue = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config, "Percentage");
             var percent = string.IsNullOrEmpty(percentStringValue) ? 20 : int.Parse(percentStringValue);
 
             var url = string.Format("guest/products/{0}/{1}", country, sixsimoperator);

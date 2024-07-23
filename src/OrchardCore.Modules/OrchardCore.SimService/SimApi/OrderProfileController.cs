@@ -387,7 +387,7 @@ namespace OrchardCore.SimService.SimApi
             }
 
             var orderId = long.Parse(id);
-            var simToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
+            var simToken = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config);
 
             var orderContent = await _sessionReadOnly
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
@@ -495,7 +495,7 @@ namespace OrchardCore.SimService.SimApi
 
             var orderId = long.Parse(id);
 
-            var simToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
+            var simToken = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config);
 
             var orderContent = await _sessionReadOnly
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
@@ -602,7 +602,7 @@ namespace OrchardCore.SimService.SimApi
 
             var orderId = long.Parse(id);
 
-            var simToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
+            var simToken = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config);
 
             var orderContent = await _sessionReadOnly
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "Orders" && index.Published && index.Latest)
@@ -707,7 +707,7 @@ namespace OrchardCore.SimService.SimApi
                 return this.ChallengeOrForbid();
             }
 
-            var fiveSimToken = await ApiCommon.ReadCache(_session, _memoryCache, _signal, _config);
+            var fiveSimToken = await ApiCommon.ReadCache(_sessionReadOnly, _memoryCache, _signal, _config);
 
             string url = string.Format("https://5sim.net/v1/user/sms/inbox/{0}", id);
 

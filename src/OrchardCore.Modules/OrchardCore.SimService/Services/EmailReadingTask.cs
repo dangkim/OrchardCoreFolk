@@ -27,6 +27,7 @@ using OrchardCore.SimService.ApiCommonFunctions;
 using Microsoft.Extensions.Caching.Memory;
 using OrchardCore.Environment.Cache;
 using Microsoft.Extensions.Configuration;
+using OrchardCore.Data;
 
 namespace OrchardCore.SimService.Services
 {
@@ -47,7 +48,7 @@ namespace OrchardCore.SimService.Services
 
         public async Task DoWorkAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken)
         {
-            var session = serviceProvider.GetService<ISession>();
+            var readOnlySession = serviceProvider.GetService<IReadOnlySession>();
             var memoryCache = serviceProvider.GetService<IMemoryCache>();
             var signal = serviceProvider.GetService<ISignal>();
             var contentManager = serviceProvider.GetRequiredService<IContentManager>();
@@ -55,11 +56,11 @@ namespace OrchardCore.SimService.Services
             using var client = new ImapClient();
 
             // get rate from cache
-            var vndRateString = await ApiCommon.ReadExchangeRateCache(session, memoryCache, signal, _config, "VND");
-            var rubRateString = await ApiCommon.ReadExchangeRateCache(session, memoryCache, signal, _config, "RUB");
+            var vndRateString = await ApiCommon.ReadExchangeRateCache(readOnlySession, memoryCache, signal, _config, "VND");
+            var rubRateString = await ApiCommon.ReadExchangeRateCache(readOnlySession, memoryCache, signal, _config, "RUB");
 
-            var vndRateDouble = Decimal.Parse(vndRateString);
-            var rubRateDouble = Decimal.Parse(rubRateString);
+            var vndRateDouble = decimal.Parse(vndRateString);
+            var rubRateDouble = decimal.Parse(rubRateString);
 
             try
             {
@@ -111,9 +112,8 @@ namespace OrchardCore.SimService.Services
                                     // MESSAGE MARKS AS READ AFTER READING MESSAGE
                                     await inbox.AddFlagsAsync(message.UniqueId, MessageFlags.Seen, true, cancellationToken);
                                     var firstIndexOfZ = firstIndex + 2;
-                                    //userId = int.Parse(readableText.Substring(firstIndexOfZ + 1, lastIndex - (firstIndexOfZ + 1)));
                                     var userIdBefore = readableText.Substring(firstIndexOfZ + 1, lastIndex - (firstIndexOfZ + 1));
-                                    userId = ReplaceLettersWithDigits(userIdBefore);
+                                    userId = ApiCommon.DecodeUserId(userIdBefore);
                                 }
 
                                 if (userId != -1)
@@ -142,7 +142,7 @@ namespace OrchardCore.SimService.Services
 
                                         var amountInRub = amountInUsd / rubRateDouble;
 
-                                        await UpdateSixSimBalanceByBankAsync(contentManager, session, amount, amountInRub, "VND", rubRateDouble, userId, message.EmailId, isVCB);
+                                        await UpdateSixSimBalanceByBankAsync(contentManager, readOnlySession, amount, amountInRub, "VND", rubRateDouble, userId, message.EmailId, isVCB);
                                     }
                                 }
                             }
@@ -164,13 +164,13 @@ namespace OrchardCore.SimService.Services
             return;
         }
 
-        private async Task<bool> UpdateSixSimBalanceByBankAsync(IContentManager _contentManager, ISession session, decimal originalAmount, decimal amount, string currency, decimal rateInUsd, long userId, string gmailMsgId, bool isVCB = false)
+        private async Task<bool> UpdateSixSimBalanceByBankAsync(IContentManager _contentManager, IReadOnlySession readOnlySession, decimal originalAmount, decimal amount, string currency, decimal rateInUsd, long userId, string gmailMsgId, bool isVCB = false)
         {
             _logger.LogError("-----------------UpdateSixSimBalanceByBankAsync----------------------");
             try
             {
                 // Get UserProfile by userId
-                var userContent = await session
+                var userContent = await readOnlySession
                 .Query<ContentItem, ContentItemIndex>(index => index.ContentType == "UserProfile" && index.Published && index.Latest)
                 .With<UserProfilePartIndex>(p => p.UserId == userId) // TODO: temporarily uncheck gmailMsgId,  Should check gmailMsgId
                 .FirstOrDefaultAsync();
@@ -261,41 +261,6 @@ namespace OrchardCore.SimService.Services
             {
                 throw;
             }
-        }
-
-        private static long ReplaceLettersWithDigits(string input)
-        {
-            // Define the reverse mapping from letters to digits using a dictionary
-            var mapping = new Dictionary<char, char>
-                            {
-                                { 'A', '0' },
-                                { 'B', '1' },
-                                { 'C', '2' },
-                                { 'D', '3' },
-                                { 'E', '4' },
-                                { 'F', '5' },
-                                { 'G', '6' },
-                                { 'H', '7' },
-                                { 'I', '8' },
-                                { 'K', '9' }
-                            };
-
-            // Use a char array to construct the result string
-            var result = new char[input.Length];
-            for (var i = 0; i < input.Length; i++)
-            {
-                if (mapping.TryGetValue(input[i], out var digit))
-                {
-                    result[i] = digit;
-                }
-                else
-                {
-                    throw new ArgumentException("Input contains invalid characters.");
-                }
-            }
-
-            // Convert the resulting char array to a string and then to a long
-            return long.Parse(new string(result));
         }
     }
 }
