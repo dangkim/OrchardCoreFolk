@@ -543,83 +543,73 @@ namespace OrchardCore.SimService.Controllers
                 }
                 else
                 {
-                    // no user could be matched, check if a new user can register
-                    if (registrationSettings.UsersCanRegister == UserRegistrationType.NoRegistration)
+                    var externalLoginViewModel = new RegisterExternalLoginViewModel();
+
+                    externalLoginViewModel.NoPassword = registrationSettings.NoPasswordForExternalUsers;
+                    externalLoginViewModel.NoEmail = registrationSettings.NoEmailForExternalUsers;
+                    externalLoginViewModel.NoUsername = registrationSettings.NoUsernameForExternalUsers;
+
+                    // If registrationSettings.NoUsernameForExternalUsers is true, this username will not be used
+                    externalLoginViewModel.UserName = await GenerateUsernameAsync(info);
+                    externalLoginViewModel.Email = email;
+
+                    user = await this.RegisterGoogleUser(new RegisterViewModel()
                     {
-                        string message = S["Site does not allow user registration."];
-                        _logger.LogWarning("{Message}", message);
-                        ModelState.AddModelError("", message);
+                        UserName = externalLoginViewModel.UserName,
+                        Email = externalLoginViewModel.Email,
+                        Password = externalLoginViewModel.UserName + "A@",
+                        ConfirmPassword = externalLoginViewModel.UserName + "A@",
+                    }, S["Confirm your account"], _logger);
+
+                    if (user == null || user is not User u)
+                    {
+                        _logger.LogError("Unable to load user with ID '{UserId}'.", _userManager.GetUserId(User));
+
+                        return RedirectToAction(returnUrl);
                     }
-                    else
+
+                    // If the registration was successful we can link the external provider and redirect the user
+                    if (user != null)
                     {
-                        var externalLoginViewModel = new RegisterExternalLoginViewModel();
+                        var time = BitConverter.GetBytes(DateTime.UtcNow.ToBinary());
+                        var key = Guid.NewGuid().ToByteArray();
+                        var token = Convert.ToBase64String(time.Concat(key).ToArray());
 
-                        externalLoginViewModel.NoPassword = registrationSettings.NoPasswordForExternalUsers;
-                        externalLoginViewModel.NoEmail = registrationSettings.NoEmailForExternalUsers;
-                        externalLoginViewModel.NoUsername = registrationSettings.NoUsernameForExternalUsers;
+                        // Create UserProfile/Part
+                        var newContentItem = await _contentManager.NewAsync("UserProfile");
 
-                        // If registrationSettings.NoUsernameForExternalUsers is true, this username will not be used
-                        externalLoginViewModel.UserName = await GenerateUsernameAsync(info);
-                        externalLoginViewModel.Email = email;
+                        newContentItem.Owner = user.UserName;
+                        newContentItem.Author = user.UserName;
 
-                        user = await this.RegisterGoogleUser(new RegisterViewModel()
+                        var userProfilePart = new UserProfilePart()
                         {
-                            UserName = externalLoginViewModel.UserName,
-                            Email = externalLoginViewModel.Email,
-                            Password = externalLoginViewModel.UserName + "A@",
-                            ConfirmPassword = externalLoginViewModel.UserName + "A@",
-                        }, S["Confirm your account"], _logger);
+                            Email = email,
+                            UserId = (user as User).Id,
+                            UserName = user.UserName,
+                            Vendor = "demo",
+                            DefaultForwardingNumber = "",
+                            Balance = 0m,
+                            Rating = 96,
+                            DefaultCoutryName = "vietnam",
+                            DefaultIso = "vn",
+                            DefaultPrefix = "+84",
+                            DefaultOperatorName = "virtual16",
+                            FrozenBalance = 0m,
+                            TokenApi = ""
+                        };
 
-                        if (user == null || user is not User u)
+                        newContentItem.Apply(userProfilePart);
+                        var createdResult = await _contentManager.UpdateValidateAndCreateAsync(newContentItem, VersionOptions.Published);
+
+                        if (createdResult.Succeeded)
                         {
-                            _logger.LogError("Unable to load user with ID '{UserId}'.", _userManager.GetUserId(User));
-
-                            return RedirectToAction(returnUrl);
+                            return RedirectToLocal(returnUrl, externalLoginViewModel.UserName, email, true);
                         }
 
-                        // If the registration was successful we can link the external provider and redirect the user
-                        if (user != null)
-                        {
-                            var time = BitConverter.GetBytes(DateTime.UtcNow.ToBinary());
-                            var key = Guid.NewGuid().ToByteArray();
-                            var token = Convert.ToBase64String(time.Concat(key).ToArray());
-
-                            // Create UserProfile/Part
-                            var newContentItem = await _contentManager.NewAsync("UserProfile");
-
-                            newContentItem.Owner = user.UserName;
-                            newContentItem.Author = user.UserName;
-
-                            var userProfilePart = new UserProfilePart()
-                            {
-                                Email = email,
-                                UserId = (user as User).Id,
-                                UserName = user.UserName,
-                                Vendor = "demo",
-                                DefaultForwardingNumber = "",
-                                Balance = 0m,
-                                Rating = 96,
-                                DefaultCoutryName = "vietnam",
-                                DefaultIso = "vn",
-                                DefaultPrefix = "+84",
-                                DefaultOperatorName = "virtual16",
-                                FrozenBalance = 0m,
-                                TokenApi = ""
-                            };
-
-                            newContentItem.Apply(userProfilePart);
-                            var createdResult = await _contentManager.UpdateValidateAndCreateAsync(newContentItem, VersionOptions.Published);
-
-                            if (createdResult.Succeeded)
-                            {
-                                return RedirectToLocal(returnUrl, externalLoginViewModel.UserName, email, true);
-                            }
-
-                            return RedirectToLocal(returnUrl);
-                        }
-
-                        return View("RegisterExternalLogin", externalLoginViewModel);
+                        return RedirectToLocal(returnUrl);
                     }
+
+                    return View("RegisterExternalLogin", externalLoginViewModel);
                 }
             }
 

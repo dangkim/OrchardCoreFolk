@@ -26,7 +26,6 @@ using Dapper;
 using System.Linq;
 using YesSql.Services;
 using OrchardCore.Lists.Models;
-using static System.Net.Mime.MediaTypeNames;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
