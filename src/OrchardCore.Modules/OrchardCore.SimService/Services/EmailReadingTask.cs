@@ -34,7 +34,7 @@ namespace OrchardCore.SimService.Services
     /// <summary>
     /// This background task will read email.
     /// </summary>
-    [BackgroundTask(Schedule = "* * 0 * * *", Description = "read gmail.", IsIncludedSeconds = true)]
+    [BackgroundTask(Schedule = "* * * * * *", Description = "read gmail.", IsIncludedSeconds = true)]
     public class EmailReadingTask : IBackgroundTask
     {
         private readonly ILogger _logger;
@@ -94,7 +94,7 @@ namespace OrchardCore.SimService.Services
                         var userId = -1L;
 
                         _logger.LogError("-----------------check isVCB----------------------");
-                        var isVCB = subject.Contains("[SMSForwarder] New message from Vietcombank");
+                        var isVCB = subject.Contains("[SMSForwarder] thuesimao mbbank");
 
                         if (isVCB)
                         {
@@ -104,9 +104,9 @@ namespace OrchardCore.SimService.Services
 
                             if (!string.IsNullOrEmpty(readableText))
                             {
-                                _logger.LogError("-----------------READ CTS----------------------");
-                                var firstIndex = readableText.IndexOf("SM"); // start message
-                                var lastIndex = readableText.LastIndexOf("EM"); // end message
+                                _logger.LogError("-----------------READ SBT----------------------");
+                                var firstIndex = readableText.IndexOf("SBT"); // start message
+                                var lastIndex = readableText.LastIndexOf("SBT"); // end message
                                 if (firstIndex != -1 && lastIndex != -1)
                                 {
                                     // MESSAGE MARKS AS READ AFTER READING MESSAGE

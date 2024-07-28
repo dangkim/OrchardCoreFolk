@@ -22,7 +22,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
 {
     public static class ApiCommon
     {
-        const string CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const string CHARS = "ACDEFGHIJKLMNOPQRUVWXYZ";
 
         public static async Task<Dictionary<string, decimal>> CalculateBalanceAsync(decimal userBalanceBTC, decimal userBalanceEth, decimal userBalanceUsdt20, decimal userBalanceVND, string userName, ISession session)
         {
@@ -279,7 +279,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
             if (currency == "VND")
             {
                 var cacheKey = _config["ExchangeRateVNDKey"];
-                var signalKey = _config["ExchangeRateVNDSignalKey"];
+                var signalKey = _config["ExchangeRateSignalVNDKey"];
 
                 var exchangeRateVNDcache = "";
                 if (!_memoryCache.TryGetValue(cacheKey, out exchangeRateVNDcache))
@@ -310,7 +310,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
             else if (currency == "RUB")
             {
                 var cacheKey = _config["ExchangeRateRUBKey"];
-                var signalKey = _config["ExchangeRateRUBSignalKey"];
+                var signalKey = _config["ExchangeRateSignalRUBKey"];
 
                 var exchangeRateRUBcache = "";
                 if (!_memoryCache.TryGetValue(cacheKey, out exchangeRateRUBcache))
@@ -780,9 +780,9 @@ namespace OrchardCore.SimService.ApiCommonFunctions
 
             while (userId > 0)
             {
-                var remainder = (int)(userId % 26);
+                var remainder = (int)(userId % CHARS.Length);
                 result = CHARS[remainder] + result;
-                userId /= 26;
+                userId /= CHARS.Length;
             }
 
             return result;
@@ -794,7 +794,7 @@ namespace OrchardCore.SimService.ApiCommonFunctions
 
             for (var i = 0; i < encodedUserId.Length; i++)
             {
-                result *= 26;
+                result *= CHARS.Length;
                 result += CHARS.IndexOf(encodedUserId[i]);
             }
 
