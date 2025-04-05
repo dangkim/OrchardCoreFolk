@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <!-- NuGet properties-->
+    <Title>OrchardCore Virtual Sim</Title>
+    <Description>
+      $(OCFrameworkDescription)
+
+      Provides Virtual Sim features for configuration, cache, bus and lock.
+    </Description>
+    <PackageTags>$(PackageTags) OrchardCoreFramework</PackageTags>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\OrchardCore\OrchardCore.Module.Targets\OrchardCore.Module.Targets.csproj" />
+    <ProjectReference Include="..\..\OrchardCore.Modules\OrchardCore.Apis.GraphQL\OrchardCore.Apis.GraphQL.csproj" />
+    <ProjectReference Include="..\..\OrchardCore.Modules\OrchardCore.BackgroundTasks\OrchardCore.BackgroundTasks.csproj" />
+    <ProjectReference Include="..\..\OrchardCore.Modules\OrchardCore.ContentFields\OrchardCore.ContentFields.csproj" />
+    <ProjectReference Include="..\..\OrchardCore.Modules\OrchardCore.Email\OrchardCore.Email.csproj" />
+    <ProjectReference Include="..\..\OrchardCore\OrchardCore.Abstractions\OrchardCore.Abstractions.csproj" />
+    <ProjectReference Include="..\..\OrchardCore\OrchardCore.Apis.GraphQL.Abstractions\OrchardCore.Apis.GraphQL.Abstractions.csproj" />
+    <ProjectReference Include="..\..\OrchardCore\OrchardCore.ContentManagement\OrchardCore.ContentManagement.csproj" />
+    <ProjectReference Include="..\..\OrchardCore\OrchardCore.ContentTypes.Abstractions\OrchardCore.ContentTypes.Abstractions.csproj" />
+    <ProjectReference Include="..\..\OrchardCore\OrchardCore.DisplayManagement\OrchardCore.DisplayManagement.csproj" />
+    <ProjectReference Include="..\..\OrchardCore\OrchardCore.Email.Abstractions\OrchardCore.Email.Abstractions.csproj" />
+    <ProjectReference Include="..\..\OrchardCore\OrchardCore.Email.Core\OrchardCore.Email.Core.csproj" />
+    <ProjectReference Include="..\..\OrchardCore\OrchardCore.Module.Targets\OrchardCore.Module.Targets.csproj" />
+    <ProjectReference Include="..\..\OrchardCore\OrchardCore.Navigation.Core\OrchardCore.Navigation.Core.csproj" />
+    <ProjectReference Include="..\..\OrchardCore\OrchardCore.ResourceManagement\OrchardCore.ResourceManagement.csproj" />
+    <ProjectReference Include="..\..\OrchardCore\OrchardCore.Users.Abstractions\OrchardCore.Users.Abstractions.csproj" />
+    <ProjectReference Include="..\OrchardCore.Lists\OrchardCore.Lists.csproj" />
+    <ProjectReference Include="..\OrchardCore.OpenId\OrchardCore.OpenId.csproj" />
+    <ProjectReference Include="..\OrchardCore.Users\OrchardCore.Users.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+    <Folder Include="Services\" />
+    <Folder Include="Views\" />
+  </ItemGroup>
+
+</Project>
