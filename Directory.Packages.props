@@ -74,6 +74,7 @@
     <PackageVersion Include="YesSql.Filters.Abstractions" Version="5.3.0" />
     <PackageVersion Include="YesSql.Filters.Query" Version="5.3.0" />
     <PackageVersion Include="ZString" Version="2.6.0" />
+    <PackageVersion Include="AspNetCoreRateLimit" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

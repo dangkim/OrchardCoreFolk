@@ -14,11 +14,21 @@ using OrchardCore.SimService.Indexes;
 using OrchardCore.SimService.Migrations;
 using OrchardCore.SimService.ContentParts;
 using YesSql.Indexes;
+using OrchardCore.SimService.Services;
+using AspNetCoreRateLimit;
+using Microsoft.Extensions.Configuration;
 
 namespace OrchardCore.SimService
 {
     public class Startup : StartupBase
     {
+        private readonly IConfiguration _configuration;
+
+        public Startup(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
         public override void ConfigureServices(IServiceCollection services)
         {
             //services.AddCors(options =>
@@ -50,11 +60,18 @@ namespace OrchardCore.SimService
             {
                 client.BaseAddress = new Uri("https://smshub.org/stubs/");
             });
+
+            services.AddMemoryCache();
+            services.Configure<IpRateLimitOptions>(_configuration.GetSection("IpRateLimiting"));
+            services.AddInMemoryRateLimiting();
+            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
         }
 
         public override void Configure(IApplicationBuilder builder, IEndpointRouteBuilder routes, IServiceProvider serviceProvider)
         {
             builder.UseCors("MyPolicy");
+            builder.UseMiddleware<ApiKeyMiddleware>();
 
             routes.MapAreaControllerRoute(
                 name: "Home",
