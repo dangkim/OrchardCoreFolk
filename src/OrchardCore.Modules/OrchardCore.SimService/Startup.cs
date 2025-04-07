@@ -17,6 +17,8 @@ using YesSql.Indexes;
 using OrchardCore.SimService.Services;
 using AspNetCoreRateLimit;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using OrchardCore.Environment.Shell;
 
 namespace OrchardCore.SimService
 {
@@ -65,13 +67,13 @@ namespace OrchardCore.SimService
             services.Configure<IpRateLimitOptions>(_configuration.GetSection("IpRateLimiting"));
             services.AddInMemoryRateLimiting();
             services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
-
+            services.AddScoped<MigrateTableToPostgres>();
         }
 
         public override void Configure(IApplicationBuilder builder, IEndpointRouteBuilder routes, IServiceProvider serviceProvider)
         {
             builder.UseCors("MyPolicy");
-            builder.UseMiddleware<ApiKeyMiddleware>();
+            //builder.UseMiddleware<ApiKeyMiddleware>();
 
             routes.MapAreaControllerRoute(
                 name: "Home",

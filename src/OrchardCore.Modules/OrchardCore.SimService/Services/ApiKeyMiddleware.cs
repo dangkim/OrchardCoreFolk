@@ -24,24 +24,44 @@ public class ApiKeyMiddleware
 
     public async Task Invoke(HttpContext context)
     {
-        if (!context.Request.Headers.TryGetValue(ApiKeyHeaderName, out var extractedApiKey))
-        {
-            LogFailure(context, "Missing API Key");
-            context.Response.StatusCode = 401;
-            await context.Response.WriteAsync("API Key is missing");
-            return;
-        }
+        //if (!context.Request.Headers.TryGetValue(ApiKeyHeaderName, out var extractedApiKey))
+        //{
+        //    LogFailure(context, "Missing API Key");
+        //    context.Response.StatusCode = 401;
+        //    await context.Response.WriteAsync("API Key is missing");
+        //    return;
+        //}
 
-        var configuredKey = _configuration["thuesimao_wallet_key"];
-        if (!string.Equals(extractedApiKey.ToString(), configuredKey))
-        {
-            LogFailure(context, "Invalid API Key");
-            context.Response.StatusCode = 401;
-            await context.Response.WriteAsync("Unauthorized");
-            return;
-        }
+        //var configuredKey = _configuration["thuesimao_wallet_key"];
+        //if (!string.Equals(extractedApiKey.ToString(), configuredKey))
+        //{
+        //    LogFailure(context, "Invalid API Key");
+        //    context.Response.StatusCode = 401;
+        //    await context.Response.WriteAsync("Unauthorized");
+        //    return;
+        //}
 
-        await _next(context);
+        //await _next(context);
+        // Only check API key for paths starting with /wallet-api or whatever path you want
+        if (context.Request.Path.StartsWithSegments("/api/content/MigrateToPostgres", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!context.Request.Headers.TryGetValue(ApiKeyHeaderName, out var extractedApiKey))
+            {
+                LogFailure(context, "Missing API Key");
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("API Key is missing");
+                return;
+            }
+
+            var configuredKey = _configuration["thuesimao_wallet_key"];
+            if (!string.Equals(extractedApiKey.ToString(), configuredKey))
+            {
+                LogFailure(context, "Invalid API Key");
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("Unauthorized");
+                return;
+            }
+        }
     }
 
     private void LogFailure(HttpContext context, string reason)

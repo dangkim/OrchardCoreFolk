@@ -44,7 +44,7 @@ namespace OrchardCore.SimService.Drivers
             part.RateFromRub = viewModel.RateInUsd;
             part.GmailMsgId = viewModel.GmailMsgId;
             part.Rating = viewModel.Rating;
-            part.DefaultCoutryName = viewModel.DefaultCoutryName;
+            part.DefaultCountryName = viewModel.DefaultCoutryName;
             part.DefaultIso = viewModel.DefaultIso;
             part.DefaultPrefix = viewModel.DefaultPrefix;
             part.DefaultOperatorName = viewModel.DefaultOperatorName;
@@ -68,7 +68,7 @@ namespace OrchardCore.SimService.Drivers
             viewModel.RateInUsd = part.RateFromRub;
             viewModel.GmailMsgId = part.GmailMsgId;
             viewModel.Rating = part.Rating;
-            viewModel.DefaultCoutryName = part.DefaultCoutryName;
+            viewModel.DefaultCoutryName = part.DefaultCountryName;
             viewModel.DefaultIso = part.DefaultIso;
             viewModel.DefaultPrefix = part.DefaultPrefix;
             viewModel.DefaultOperatorName = part.DefaultOperatorName;

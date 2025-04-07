@@ -11,6 +11,7 @@ namespace OrchardCore.SimService.ContentParts
         public string Email { get; set; }
         public long UserId { get; set; }
         public string UserName { get; set; }
+        public string ContentItemId { get; set; }
         public string Vendor { get; set; }
         public string DefaultForwardingNumber { get; set; }
         public decimal Balance { get; set; }
@@ -18,9 +19,10 @@ namespace OrchardCore.SimService.ContentParts
         public decimal OriginalAmount { get; set; }
         public decimal Amount { get; set; }
         public decimal RateFromRub { get; set; }
+        public decimal RateInUsd { get; set; }
         public string GmailMsgId { get; set; }
         public int Rating { get; set; }
-        public string DefaultCoutryName { get; set; }
+        public string DefaultCountryName { get; set; }
         public string DefaultIso { get; set; }
         public string DefaultPrefix { get; set; }
         public string DefaultOperatorName { get; set; }

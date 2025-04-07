@@ -19,9 +19,9 @@ public class SimMigration : DataMigration
 
     public async Task<int> CreateAsync()
     {
-                await _contentDefinitionManager.AlterPartDefinitionAsync(nameof(UserProfilePart), part => part
-            .Attachable()
-        );
+        await _contentDefinitionManager.AlterPartDefinitionAsync(nameof(UserProfilePart), part => part
+    .Attachable()
+);
 
         await _contentDefinitionManager.AlterTypeDefinitionAsync("UserProfile", type => type
             .Creatable()
@@ -38,7 +38,7 @@ public class SimMigration : DataMigration
             .Column<string>(nameof(UserProfilePartIndex.DefaultForwardingNumber), column => column.WithLength(26))
             .Column<decimal>(nameof(UserProfilePartIndex.Balance))
             .Column<int>(nameof(UserProfilePartIndex.Rating))
-            .Column<string>(nameof(UserProfilePartIndex.DefaultCoutryName), column => column.WithLength(26))
+            .Column<string>(nameof(UserProfilePartIndex.DefaultCountryName), column => column.WithLength(26))
             .Column<string>(nameof(UserProfilePartIndex.DefaultIso), column => column.WithLength(26))
             .Column<string>(nameof(UserProfilePartIndex.DefaultPrefix), column => column.WithLength(26))
             .Column<string>(nameof(UserProfilePartIndex.DefaultOperatorName), column => column.WithLength(26))
@@ -84,5 +84,16 @@ public class SimMigration : DataMigration
         );
 
         return 1;
+    }
+
+    public async Task<int> UpdateFrom1Async()
+    {
+        await SchemaBuilder.AlterTableAsync(nameof(UserProfilePartIndex), table => table
+                        .DropColumn("DefaultCoutryName"));
+
+        await SchemaBuilder.AlterTableAsync(nameof(UserProfilePartIndex), table => table
+                        .AddColumn<string>(nameof(UserProfilePartIndex.DefaultCountryName)));
+
+        return 2;
     }
 }

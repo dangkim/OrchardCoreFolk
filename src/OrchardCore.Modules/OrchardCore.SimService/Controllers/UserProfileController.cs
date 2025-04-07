@@ -146,7 +146,7 @@ namespace OrchardCore.SimService.Controllers
                 .With<UserProfilePartIndex>(p => p.UserId == userId)
                 .FirstOrDefaultAsync();
 
-                if (userContent == null)
+                if (userContent != null)
                 {
                     var userProfilePart = userContent.As<UserProfilePart>();
                     var currentBalance = userProfilePart.Balance;
@@ -169,7 +169,7 @@ namespace OrchardCore.SimService.Controllers
                         GmailMsgId = userProfilePart.GmailMsgId,
                         RateFromRub = userProfilePart.RateFromRub,
                         Rating = userProfilePart.Rating,
-                        DefaultCoutryName = userProfilePart.DefaultCoutryName,
+                        DefaultCountryName = userProfilePart.DefaultCountryName,
                         DefaultIso = userProfilePart.DefaultIso,
                         DefaultPrefix = userProfilePart.DefaultPrefix,
                         DefaultOperatorName = userProfilePart.DefaultOperatorName,
@@ -206,7 +206,7 @@ namespace OrchardCore.SimService.Controllers
                 .With<UserProfilePartIndex>(p => p.UserId == userId)
                 .FirstOrDefaultAsync();
 
-                if (userContent == null)
+                if (userContent != null)
                 {
                     var userProfilePart = userContent.As<UserProfilePart>();
                     var currentBalance = userProfilePart.Balance;
@@ -229,7 +229,7 @@ namespace OrchardCore.SimService.Controllers
                         GmailMsgId = userProfilePart.GmailMsgId,
                         RateFromRub = userProfilePart.RateFromRub,
                         Rating = userProfilePart.Rating,
-                        DefaultCoutryName = userProfilePart.DefaultCoutryName,
+                        DefaultCountryName = userProfilePart.DefaultCountryName,
                         DefaultIso = userProfilePart.DefaultIso,
                         DefaultPrefix = userProfilePart.DefaultPrefix,
                         DefaultOperatorName = userProfilePart.DefaultOperatorName,

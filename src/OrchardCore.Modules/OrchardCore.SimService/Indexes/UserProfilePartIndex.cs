@@ -23,7 +23,7 @@ namespace OrchardCore.SimService.Indexes
         public decimal RateInUsd { get; set; }
         public string GmailMsgId { get; set; }
         public int Rating { get; set; }
-        public string DefaultCoutryName { get; set; }
+        public string DefaultCountryName { get; set; }
         public string DefaultIso { get; set; }
         public string DefaultPrefix { get; set; }
         public string DefaultOperatorName { get; set; }
@@ -55,7 +55,7 @@ namespace OrchardCore.SimService.Indexes
                         RateInUsd = userProfilePart.RateFromRub,
                         GmailMsgId = userProfilePart.GmailMsgId,
                         Rating = userProfilePart.Rating,
-                        DefaultCoutryName = userProfilePart.DefaultCoutryName,
+                        DefaultCountryName = userProfilePart.DefaultCountryName,
                         DefaultIso = userProfilePart.DefaultIso,
                         DefaultPrefix = userProfilePart.DefaultPrefix,
                         DefaultOperatorName = userProfilePart.DefaultOperatorName,

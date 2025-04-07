@@ -39,9 +39,7 @@ using System.ComponentModel.DataAnnotations;
 using OrchardCore.SimService.Permissions;
 using OrchardCore.Users.ViewModels;
 using System.Text.Json.Settings;
-using System.Text.Json;
-using System.Text;
-using static GraphQL.Validation.Rules.OverlappingFieldsCanBeMerged;
+using OrchardCore.SimService.Services;
 
 namespace OrchardCore.SimService.Controllers
 {
@@ -51,39 +49,25 @@ namespace OrchardCore.SimService.Controllers
     public class ApiController : Controller
     {
         private static readonly JsonMergeSettings _updateJsonMergeSettings = new JsonMergeSettings { MergeArrayHandling = MergeArrayHandling.Replace };
-        private readonly Microsoft.Extensions.Configuration.IConfiguration _config;
         private readonly IContentManager _contentManager;
         private readonly IAuthorizationService _authorizationService;
         private readonly IStringLocalizer S;
 
-
         public string btcPayliteApiUrl;
         public string btcPayliteToken;
 
+        private readonly MigrateTableToPostgres _migration;
 
         public ApiController(
-            IUserService userService,
-            Microsoft.Extensions.Configuration.IConfiguration config,
-            YesSql.ISession session,
             IContentManager contentManager,
             IAuthorizationService authorizationService,
-            UserManager<IUser> userManager,
-            IEmailAddressValidator emailAddressValidator,
-            ILogger<ApiController> logger,
-            ISiteService siteService,
-            SignInManager<IUser> signInManager,
-            IEnumerable<ILoginFormEvent> accountEvents,
-            IScriptingManager scriptingManager,
-            IEnumerable<IExternalLoginEventHandler> externalLoginHandlers,
-            IDataProtectionProvider dataProtectionProvider,
-            IClock clock,
-            IOpenIdClientService clientService,
-            IStringLocalizer<ApiController> stringLocalizer)
+            IStringLocalizer<ApiController> stringLocalizer,
+            MigrateTableToPostgres migration)
         {
-            _config = config;
             _contentManager = contentManager;
             _authorizationService = authorizationService;
             S = stringLocalizer;
+            _migration = migration;
         }
 
         [Route("{contentItemId}"), HttpGet]
@@ -107,6 +91,13 @@ namespace OrchardCore.SimService.Controllers
             }
 
             return Ok(contentItem);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> MigrateToPostgres()
+        {
+            await _migration.MigrateData();
+            return Ok("✅ Migration completed (or resumed from last checkpoint).");
         }
 
         [HttpPost]
